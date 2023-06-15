@@ -5918,10 +5918,10 @@ safe-json-utils@^1.1.1:
   resolved "https://registry.yarnpkg.com/safe-json-utils/-/safe-json-utils-1.1.1.tgz#0e883874467d95ab914c3f511096b89bfb3e63b1"
   integrity sha512-SAJWGKDs50tAbiDXLf89PDwt9XYkWyANFWVzn4dTXl5QyI8t2o/bW5/OJl3lvc2WVU4MEpTo9Yz5NVFNsp+OJQ==
 
-sass@^1.52.3:
-  version "1.52.3"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.52.3.tgz#b7cc7ffea2341ccc9a0c4fd372bf1b3f9be1b6cb"
-  integrity sha512-LNNPJ9lafx+j1ArtA7GyEJm9eawXN8KlA1+5dF6IZyoONg1Tyo/g+muOsENWJH/2Q1FHbbV4UwliU0cXMa/VIA==
+sass@^1.63.0:
+  version "1.63.0"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.63.0.tgz#76b2a27282836b3343a4a669dbafb71fd93b1927"
+  integrity sha512-YIkMh4jvWB0R43XxjEr+GG26G1X40y4tDRoBhbOD4KkfXrwJgD8elAqU4mUqC5kP2nTrf7v77ZgYPZVFebHmyw==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"

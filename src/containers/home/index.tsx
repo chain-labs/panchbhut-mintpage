@@ -8,6 +8,7 @@ import {CONTRACT_ADDRESS} from '../../utils/constants';
 import If from '../../components/If';
 import {useAppSelector} from '../../redux/hooks';
 import {userSelector} from '../../redux/user';
+import MintPage from './components/MintPage';
 
 const HomeContainer = () => {
 	const provider = useProvider();
@@ -23,13 +24,36 @@ const HomeContainer = () => {
 			console.log(contract);
 			setContract(contract);
 		}
-	}, [contractAddress, provider, signer, user]);
+	}, [contractAddress, provider, signer]);
 
 	return (
-		<If
-			condition={user.exists}
-			then={<div>HomeContainer</div>}
-		/>
+		<div className="container">
+			{/* <input
+				className="input"
+				type="number"
+				onWheel={e => {
+					// @ts-ignore
+					e.target?.blur();
+				}}
+				value={noOfTokens}
+				onChange={e => setNoOfTokens(e.target.value)}
+				// min={0}
+				// max={10}
+				// disabled={disabledMintInput}
+			/>
+			<button
+				className="mint-btn"
+				onClick={mintController}
+				// disabled={disabledMintButton}
+				// style={noSale ? {paddingLeft: '24px', paddingRight: '24px'} : null}
+			>
+				Mint
+			</button> */}
+			<If
+				condition={!!contract}
+				then={<MintPage contract={contract} />}
+			/>
+		</div>
 	);
 };
 

@@ -1,0 +1,49 @@
+$secondary: #080F5B;
+$primary: #15db95;
+$image1: 'https://icedrive.net/s/X61R1Bt7YzSaitbWvNR2iSCuFzyb';
+
+
+.container {
+  background-image: url("../../public/mint_page2.jpg");
+  // position: relative;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh;
+  min-width: 98vw;
+  // padding-top: 20px;
+  // position: relative;
+  
+  * {
+    background: $image1;
+
+    z-index: 5;
+  }
+
+  
+}
+.navbar {
+  max-width: 1280px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+
+  .logo-cont {
+    position: relative;
+    width: 328px;
+    height: 50px;
+    @media screen and (max-width: 768px) {
+      height: 24px;
+      width: 50vw;
+    }
+  }
+}
+.mint-page-1{
+  min-height: 100vh;
+  min-width: 98vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: green
+}
