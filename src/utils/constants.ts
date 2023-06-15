@@ -23,7 +23,7 @@ export const getChain = () => {
     case 'goerli':
       return '5'
     case 'ethereum':
-      return '137'
+      return '1'
   }
 }
 

@@ -11,3 +11,10 @@ export const MINTS = {
     3: `mintAllowListed`,
     4: `mintPublic`,
   }
+
+  export const SALE_ID={
+    PUBLIC:'1',
+    DISCOUNTED:'2',
+    ALLOWLIST:'3',
+    DISCOUT_ALLOWLIST:'4',
+  }

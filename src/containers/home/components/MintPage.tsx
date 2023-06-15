@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ConnectWallet from '../../../components/Navbar/ConnectWallet';
-import {ethers} from 'ethers';
-import {MINTS} from '../constants';
+import {BigNumber, ethers} from 'ethers';
+import {MINTS, SALE_ID} from '../constants';
 import {useProvider, useSigner} from 'wagmi';
 import {useAppSelector} from '../../../redux/hooks';
 import {userSelector} from '../../../redux/user';
@@ -19,14 +19,15 @@ const MintPage = ({contract}: Props) => {
 	const {data: signer} = useSigner();
 	const provider = useProvider();
 	const user = useAppSelector(userSelector);
-	const [price, setPrice] = useState();
+	const [price, setPrice] = useState<BigNumber>();
 
 	useEffect(() => {
 		const getContractDetails = async () => {
 			try {
-				const saleCategory = await contract.callStatic.getSaleCategory(1);
-				// const price = await contract.callStatic.
-				console.log(contract.callStatic.price);
+				const saleCategory = await contract.callStatic.getSaleCategory(
+					SALE_ID.DISCOUNTED
+				);
+
 				setSaleCategory(saleCategory);
 			} catch (err) {
 				console.log(err);
@@ -42,6 +43,10 @@ const MintPage = ({contract}: Props) => {
 		if (saleCategory) {
 			const isDiscountEnabled = saleCategory['isDiscountEnabled'];
 			const merkleRoot = saleCategory['merkleRoot'];
+			const price = saleCategory['price'];
+			console.log(saleCategory);
+			setPrice(price);
+			console.log(ethers.utils.formatUnits(price), 'ETH');
 			getIsMintDiscounted(isDiscountEnabled);
 			getIsMintAllowListed(merkleRoot);
 			getMintType();
@@ -79,21 +84,66 @@ const MintPage = ({contract}: Props) => {
 	const mintController = async () => {
 		console.log(mintType);
 		if (mintType === MINTS.DISCOUNTED_ALLOWLISTED) {
+			console.log('Mint is discounted allowlisted');
 			try {
 				const transaction = await contract
 					.connect(signer)
-					?.mintDiscountAllowlist(user.address, 1, 1);
+					?.mintDiscountAllowlist(
+						user.address,
+						noOfTokens,
+						parseInt(SALE_ID.DISCOUT_ALLOWLIST),
+						{
+							value: BigNumber.from(noOfTokens).mul(price),
+						}
+					);
 				console.log(transaction);
 			} catch (error) {
 				console.log({error});
 			}
 		} else if (mintType === MINTS.PUBLIC) {
+			console.log('Mint is public');
 			try {
-				console.log('Receiver address:', user.address);
-				console.log('Signer:', signer);
-				console.log('No of tokens:', 1);
-				console.log('Sale id:', 1);
-				const transaction = await contract.mintPublic(user.address, 1, 1);
+				const transaction = await contract
+					?.connect(signer)
+					?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
+						value: BigNumber.from(noOfTokens).mul(price),
+					});
+				console.log('Transaction:', transaction);
+			} catch (error) {
+				console.log({error});
+			}
+		} else if (mintType === MINTS.DISCOUNTED) {
+			console.log('Mint is discounted');
+			try {
+				const transaction = await contract
+					?.connect(signer)
+					?.mintDiscounted(
+						user.address,
+						noOfTokens,
+						parseInt(SALE_ID.DISCOUNTED),
+						parseInt('1'),
+						signer,
+						{
+							value: BigNumber.from(noOfTokens).mul(price),
+						}
+					);
+				console.log('Transaction:', transaction);
+			} catch (error) {
+				console.log({error});
+			}
+		} else if (mintType === MINTS.ALLOWLISTED) {
+			console.log('Mint is allowlisted');
+			try {
+				const transaction = await contract
+					?.connect(signer)
+					?.mintAllowlisted(
+						user.address,
+						noOfTokens,
+						parseInt(SALE_ID.ALLOWLIST),
+						{
+							value: BigNumber.from(noOfTokens).mul(price),
+						}
+					);
 				console.log('Transaction:', transaction);
 			} catch (error) {
 				console.log({error});
