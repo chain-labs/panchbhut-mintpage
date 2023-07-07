@@ -5,6 +5,7 @@ import {MINTS, SALE_ID} from '../constants';
 import {useProvider, useSigner} from 'wagmi';
 import {useAppSelector} from '../../../redux/hooks';
 import {userSelector} from '../../../redux/user';
+import MintPageComp from './MintPageComp';
 
 interface Props {
 	contract: ethers.Contract;
@@ -152,8 +153,10 @@ const MintPage = ({contract}: Props) => {
 	};
 
 	return (
-		<div className="mint-page-1">
-			<input
+		<div
+		// className="mint-page"
+		>
+			{/* <input
 				className="input"
 				type="number"
 				onWheel={e => {
@@ -180,8 +183,9 @@ const MintPage = ({contract}: Props) => {
 				// style={noSale ? {paddingLeft: '24px', paddingRight: '24px'} : null}
 			>
 				Mint
-			</button>
-			<ConnectWallet />
+			</button> */}
+			<MintPageComp />
+			{/* <ConnectWallet /> */}
 		</div>
 	);
 };

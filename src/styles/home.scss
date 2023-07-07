@@ -38,7 +38,7 @@ $image1: 'https://icedrive.net/s/X61R1Bt7YzSaitbWvNR2iSCuFzyb';
     }
   }
 }
-.mint-page-1{
+.mint-page{
   min-height: 100vh;
   min-width: 98vw;
   display: flex;
@@ -46,4 +46,26 @@ $image1: 'https://icedrive.net/s/X61R1Bt7YzSaitbWvNR2iSCuFzyb';
   align-items: center;
   flex-direction: column;
   color: green
+}
+
+.mint-page-1{
+  min-height: 100vh;
+  min-width: 98vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: #c58218 ;
+  .sale-detail-box{
+    margin-top: 5vw;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: row;
+    min-width: 35vw;
+  }
+  .wallet-button{
+    position: relative;
+    top: 3vw;
+  }
 }
