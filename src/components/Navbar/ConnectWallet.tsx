@@ -47,7 +47,7 @@ const ConnectWallet = () => {
 										<button
 											onClick={openConnectModal}
 											type="button"
-											className="mr-3 rounded-lg bg-yellow-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-violet-300  md:mr-0"
+											className="wallet-button"
 										>
 											Connect Wallet
 										</button>

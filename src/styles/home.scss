@@ -2,26 +2,33 @@ $secondary: #080F5B;
 $primary: #15db95;
 $image1: 'https://icedrive.net/s/X61R1Bt7YzSaitbWvNR2iSCuFzyb';
 
+.center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 
 .container {
-  background-image: url("../../public/mint_page2.jpg");
-  // position: relative;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  min-height: 100vh;
-  min-width: 98vw;
+  // background-image: url("../../public/mint_page2.jpg");
+  // // position: relative;
+  // background-position: center center;
+  // background-repeat: no-repeat;
+  // background-size: cover;
+  // min-height: 100vh;
+  // min-width: 100vw;
   // padding-top: 20px;
   // position: relative;
   
   * {
-    background: $image1;
+    // background: $image1;
 
-    z-index: 5;
+    // z-index: 5;
   }
 
   
 }
+
 .navbar {
   max-width: 1280px;
   margin: auto;
@@ -39,21 +46,40 @@ $image1: 'https://icedrive.net/s/X61R1Bt7YzSaitbWvNR2iSCuFzyb';
   }
 }
 .mint-page{
+  background-image: url("../../public/mint_page1.jpg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  position: relative;
   min-height: 100vh;
   min-width: 98vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @extend .center;
   flex-direction: column;
-  color: green
+  justify-content: start;
+  color:#c58218;
+  text-align: center;
 }
-
+.wallet-button{
+  background-image: url("../../public/collect_button.jpg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  position: relative;
+  top: 3vw;
+  width: 15rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  color: black;
+  
+  
+  
+}
 .mint-page-1{
+  background-image: url("../../public/mint_page2.jpg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
   min-height: 100vh;
-  min-width: 98vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  min-width: 100vw;
+  @extend .center;
   flex-direction: column;
   color: #c58218 ;
   .sale-detail-box{
@@ -63,9 +89,11 @@ $image1: 'https://icedrive.net/s/X61R1Bt7YzSaitbWvNR2iSCuFzyb';
     align-items: center;
     flex-direction: row;
     min-width: 35vw;
+    .detail-text{
+      @extend .center;
+      flex-direction: column;
+      
+    }
   }
-  .wallet-button{
-    position: relative;
-    top: 3vw;
-  }
+  
 }
