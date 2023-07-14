@@ -10,7 +10,7 @@ const Home: NextPage = () => {
 				<title>Panchbut Game | Mint Here</title>
 				<link
 					rel="shortcut icon"
-					href=" https://pranapsivadasan.github.io/panchbhut/assets/navLogo.png"
+					href="https://pranapsivadasan.github.io/panchbhut/assets/navLogo.png"
 				/>
 			</Head>
 			<HomeContainer />
