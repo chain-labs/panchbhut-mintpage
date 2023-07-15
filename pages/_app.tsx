@@ -1,17 +1,16 @@
-import '../styles/globals.css';
-import '../styles/Home.scss';
-import '../styles/Toaster.scss';
 import type {AppProps} from 'next/app';
 import React, {useEffect} from 'react';
 import Toaster from '../src/components/Toaster';
+import Wagmi from '../src/components/Wagmi';
+import Navbar from '../src/components/Navbar';
+import {wrapper} from '../src/redux/store';
 
 function MyApp({Component, pageProps}: AppProps) {
 	return (
-		<React.Fragment>
-			<Toaster />
+		<Wagmi>
+			<Navbar />
 			<Component {...pageProps} />
-		</React.Fragment>
+		</Wagmi>
 	);
 }
-
-export default MyApp;
+export default wrapper.withRedux(MyApp);
