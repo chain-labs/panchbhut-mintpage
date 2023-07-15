@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import useCustomContract, {
 	getContractDetails,
-} from '../../ethereum/useCustomContract';
+} from 'src/ethereum/useCustomContract';
 import {useProvider, useSigner} from 'wagmi';
 import {ethers} from 'ethers';
-import {CONTRACT_ADDRESS} from '../../utils/constants';
-import If from '../../components/If';
-import {useAppSelector} from '../../redux/hooks';
-import {userSelector} from '../../redux/user';
+import {CONTRACT_ADDRESS} from 'src/utils/constants';
+import If from 'components/If';
+import {useAppSelector} from 'redux/hooks';
+import {userSelector} from 'redux/user';
 
 const HomeContainer = () => {
 	const provider = useProvider();
