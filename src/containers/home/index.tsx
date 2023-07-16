@@ -27,12 +27,25 @@ const HomeContainer = () => {
 	}, [contractAddress, provider, signer, user]);
 
 	return (
-		<div className="min-h-screen bg-home-lg">
-			<If
-				condition={!!contract}
-				then={<MintPage contract={contract} />}
-			/>
-		</div>
+		<If
+			condition={user.exists}
+			then={
+				<div className="min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
+					<If
+						condition={!!contract}
+						then={<MintPage contract={contract} />}
+					/>
+				</div>
+			}
+			else={
+				<div className="min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat">
+					<If
+						condition={!!contract}
+						then={<MintPage contract={contract} />}
+					/>
+				</div>
+			}
+		/>
 	);
 };
 
