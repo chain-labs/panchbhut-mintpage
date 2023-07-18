@@ -8,6 +8,7 @@ import {CONTRACT_ADDRESS} from 'src/utils/constants';
 import If from 'components/If';
 import {useAppSelector} from 'redux/hooks';
 import {userSelector} from 'redux/user';
+import MintPage from '../mintPage';
 
 const HomeContainer = () => {
 	const provider = useProvider();
@@ -28,7 +29,22 @@ const HomeContainer = () => {
 	return (
 		<If
 			condition={user.exists}
-			then={<div>HomeContainer</div>}
+			then={
+				<div className="min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
+					<If
+						condition={!!contract}
+						then={<MintPage contract={contract} />}
+					/>
+				</div>
+			}
+			else={
+				<div className="min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat">
+					<If
+						condition={!!contract}
+						then={<MintPage contract={contract} />}
+					/>
+				</div>
+			}
 		/>
 	);
 };
