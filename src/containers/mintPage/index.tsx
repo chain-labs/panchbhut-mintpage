@@ -4,7 +4,6 @@ import {useAppSelector} from 'src/redux/hooks';
 import {userSelector} from 'src/redux/user';
 import {useProvider, useSigner} from 'wagmi';
 import {getIsMintAllowListed, getMintType} from './utils';
-import If from 'src/components/If';
 import {BigNumber} from 'ethers';
 import {MINTS, SALE_ID} from './constants';
 
@@ -108,7 +107,7 @@ const MintPage = ({contract}) => {
 			</div>
 			<button
 				type="button"
-				className="focus:outline-none mt-4 text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:focus:ring-yellow-900"
+				className="focus:outline-none mt-4 text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-4 focus:ring-yellow-700 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:focus:ring-yellow-700"
 				onClick={mintController}
 			>
 				Mint
