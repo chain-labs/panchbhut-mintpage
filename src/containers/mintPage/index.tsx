@@ -36,6 +36,8 @@ const MintPage = ({contract}) => {
 	}, [contract]);
 
 	useEffect(() => {
+		//If saleCategory is present then it get the required details like isDiscountEnabled,price,merkleroot
+		//for understanding the mint type
 		if (saleCategory) {
 			const isDiscountEnabled = saleCategory['isDiscountEnabled'];
 			const merkleRoot = saleCategory['merkleRoot'];
@@ -47,6 +49,7 @@ const MintPage = ({contract}) => {
 	}, [saleCategory]);
 
 	useEffect(() => {
+		//It checks allowlisted and discounted conditions and the setMintType accordingly
 		const getCurrentMintType = async () => {
 			const mint_type = await getMintType(allowListed, discounted);
 			setMintType(mint_type);
@@ -55,6 +58,7 @@ const MintPage = ({contract}) => {
 		getCurrentMintType();
 	}, [discounted, allowListed]);
 
+	//Below function checks the mint type and according to the minttype it calls the required function
 	const mintController = async () => {
 		if (noOfTokens) {
 			console.log(mintType);
