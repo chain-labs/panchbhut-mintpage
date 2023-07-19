@@ -107,7 +107,7 @@ const MintPage = ({contract}) => {
 			</div>
 			<button
 				type="button"
-				className="focus:outline-none mt-4 text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-4 focus:ring-yellow-700 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:focus:ring-yellow-700"
+				className="focus:outline-none mt-4 text-white bg-yellow-600 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-700 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:focus:ring-yellow-700"
 				onClick={mintController}
 			>
 				Mint
