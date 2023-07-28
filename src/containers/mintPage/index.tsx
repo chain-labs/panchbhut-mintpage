@@ -6,6 +6,7 @@ import {useProvider, useSigner} from 'wagmi';
 import {getIsMintAllowListed, getMintType} from './utils';
 import {BigNumber} from 'ethers';
 import {MINTS, SALE_ID} from './constants';
+import toast, {Toaster} from 'react-hot-toast';
 
 const MintPage = ({contract}) => {
 	const [noOfTokens, setNoOfTokens] = useState<string>('');
@@ -78,8 +79,12 @@ const MintPage = ({contract}) => {
 							value: BigNumber.from(noOfTokens).mul(price),
 						});
 					console.log('Transaction:', transaction);
+					if (transaction) {
+						toast(`🎉 Mint Succesful`);
+					}
 				} catch (error) {
 					console.log({error});
+					toast(`❌ Something went wrong! Please Try Again`);
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
 				console.log('Mint is discounted');
@@ -93,6 +98,8 @@ const MintPage = ({contract}) => {
 
 	return (
 		<div className="flex justify-center items-center flex-col py-10">
+			<Toaster position="top-center" />
+
 			<div>
 				<input
 					className="input"
