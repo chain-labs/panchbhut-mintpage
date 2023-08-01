@@ -1,10 +1,11 @@
 import React from 'react';
 import ConnectWallet from 'src/components/Navbar/ConnectWallet';
+import MintPageComp from './components/MintPageComp';
 
 const MintPage = ({contract}) => {
 	return (
-		<div className="flex justify-center items-center flex-col py-10">
-			<div>
+		<div className="flex justify-center items-center flex-col">
+			{/* <div>
 				<input
 					className="input"
 					type="number"
@@ -14,8 +15,9 @@ const MintPage = ({contract}) => {
 					}}
 				/>
 			</div>
-			<button className="text-white">Mint</button>
+			<button className="text-white">Mint</button> */}
 			<ConnectWallet />
+			<MintPageComp />
 		</div>
 	);
 };
