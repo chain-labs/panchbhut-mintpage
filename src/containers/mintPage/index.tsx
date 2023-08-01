@@ -72,20 +72,19 @@ const MintPage = ({contract}) => {
 					saleId: SALE_ID.PUBLIC,
 					value: BigNumber.from(noOfTokens).mul(price),
 				});
-				try {
-					const transaction = await contract
-						?.connect(signer)
+				contract?.connect(signer)
 						?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
 							value: BigNumber.from(noOfTokens).mul(price),
+						})
+						.then(async (res)=>{
+							console.log(res)
+							toast(`🎉 Mint Succesful`);
+
+						}).catch((err)=>{
+							console.log(err)
+							toast(`❌ Mint Failed! Please Try Again`);
+
 						});
-					console.log('Transaction:', transaction);
-					if (transaction) {
-						toast(`🎉 Mint Succesful`);
-					}
-				} catch (error) {
-					console.log({error});
-					toast(`❌ Something went wrong! Please Try Again`);
-				}
 			} else if (mintType === MINTS.DISCOUNTED) {
 				console.log('Mint is discounted');
 			} else if (mintType === MINTS.ALLOWLISTED) {
