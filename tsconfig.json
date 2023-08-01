@@ -13,13 +13,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/containers/bootypix/audio.jsx"],
-  "exclude": ["node_modules"],
-  "baseUrl": ".",
-  "paths": {
-    "@/settings/*": ["./src/settings/*"],
-    "@/components/*": ["./src/components/*"]
-  } 
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

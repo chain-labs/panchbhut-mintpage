@@ -16,5 +16,5 @@ export const MINTS = {
     PUBLIC:'1',
     DISCOUNTED:'2',
     ALLOWLIST:'3',
-    DISCOUT_ALLOWLIST:'4',
+    DISCOUNT_ALLOWLIST:'4',
   }
