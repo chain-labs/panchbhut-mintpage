@@ -23,7 +23,7 @@ export const getChain = () => {
     case 'goerli':
       return '5'
     case 'ethereum':
-      return '137'
+      return '1'
   }
 }
 
@@ -33,7 +33,7 @@ export const getEtherscanUrl = () => {
   switch (getChain()) {
     case '5':
       return `https://goerli.etherscan.io/address/${CONTRACT_ADDRESS}`
-    case '137':
+    case '1':
       return `https://polygonscan.com/address/${CONTRACT_ADDRESS}`
   }
 }
