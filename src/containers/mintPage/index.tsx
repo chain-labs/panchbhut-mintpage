@@ -78,10 +78,10 @@ const MintPage = ({contract}) => {
 						?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
 							value: BigNumber.from(noOfTokens).mul(price),
 						});
-					console.log('Transaction:', transaction);
-					if (transaction) {
-						toast(`🎉 Mint Succesful`);
-					}
+					const event = (await transaction.wait()).events?.filter(
+						event => event.event === 'ApprovalForAll'
+					);
+					console.log(event);
 				} catch (error) {
 					console.log({error});
 					toast(`❌ Something went wrong! Please Try Again`);
