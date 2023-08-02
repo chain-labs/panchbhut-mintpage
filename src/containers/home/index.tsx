@@ -10,6 +10,7 @@ import {useAppSelector} from 'redux/hooks';
 import {userSelector} from 'redux/user';
 import MintPage from '../mintPage';
 import MintPageComp2 from '../mintPage/components/MintPageComp2';
+import DiscountCodeComp from '../mintPage/components/DiscountCodeComp';
 
 const HomeContainer = () => {
 	const provider = useProvider();

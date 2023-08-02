@@ -32,6 +32,7 @@
 		"sass": "^1.52.3",
 		"styled-components": "^5.3.6",
 		"styled-system": "^5.1.5",
+		"tw-elements-react": "^1.0.0-alpha1",
 		"urql": "^3.0.4",
 		"wagmi": "0.6.4"
 	},
