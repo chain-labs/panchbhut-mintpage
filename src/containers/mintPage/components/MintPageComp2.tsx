@@ -45,7 +45,7 @@ const MintPageComp2 = () => {
 										e.target?.blur();
 									}}
 									value={noOfTokens}
-									onChange={e => setNoOfTokens(e.target?.value)}
+									onChange={e => setNoOfTokens(parseInt(e.target?.value))}
 								/>
 								<button
 									className="mt-2"

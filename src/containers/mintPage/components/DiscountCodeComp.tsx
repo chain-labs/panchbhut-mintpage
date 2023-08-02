@@ -4,7 +4,7 @@ import CloseButton from 'public/static/images/close_button.png';
 import Logo from 'public/static/images/menu_logo.png';
 
 const DiscountCodeComp = () => {
-	const [discountCode, setDiscountCode] = useState();
+	const [discountCode, setDiscountCode] = useState('');
 	return (
 		<div className="flex bg-coupon-code-lg bg-no-repeat w-[50%] relative left-[25%] top-[150px]  justify-items-center items-center flex-col">
 			<div className="relative left-[45%] top-2">
