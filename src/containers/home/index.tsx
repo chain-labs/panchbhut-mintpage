@@ -9,6 +9,7 @@ import If from 'components/If';
 import {useAppSelector} from 'redux/hooks';
 import {userSelector} from 'redux/user';
 import MintPage from '../mintPage';
+import ConnectWallet from 'src/components/Navbar/ConnectWallet';
 
 const HomeContainer = () => {
 	const provider = useProvider();
@@ -27,25 +28,18 @@ const HomeContainer = () => {
 	}, [contractAddress, provider, signer, user]);
 
 	return (
-		<If
-			condition={user.exists}
-			then={
-				<div className="min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
+		<div className="md:flex md:justify-center min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat md:items-center">
+			<If
+				condition={user.exists}
+				then={
 					<If
 						condition={!!contract}
 						then={<MintPage contract={contract} />}
 					/>
-				</div>
-			}
-			else={
-				<div className="min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat">
-					<If
-						condition={!!contract}
-						then={<MintPage contract={contract} />}
-					/>
-				</div>
-			}
-		/>
+				}
+				else={<ConnectWallet />}
+			/>
+		</div>
 	);
 };
 
