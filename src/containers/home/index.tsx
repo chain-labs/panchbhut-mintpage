@@ -5,12 +5,10 @@ import useCustomContract, {
 import {useProvider, useSigner} from 'wagmi';
 import {ethers} from 'ethers';
 import {CONTRACT_ADDRESS} from 'src/utils/constants';
-import If from 'components/If';
 import {useAppSelector} from 'redux/hooks';
 import {userSelector} from 'redux/user';
-import MintPage from '../mintPage';
-import MintPageComp2 from '../mintPage/components/MintPageComp2';
-import DiscountCodeComp from '../mintPage/components/DiscountCodeComp';
+import LogoComp from '../mintPage/components/LogoComp';
+import {useRouter} from 'next/router';
 
 const HomeContainer = () => {
 	const provider = useProvider();
@@ -18,6 +16,7 @@ const HomeContainer = () => {
 	const contractAddress = CONTRACT_ADDRESS;
 	const {data: signer} = useSigner();
 	const user = useAppSelector(userSelector);
+	const {push} = useRouter();
 
 	useEffect(() => {
 		if (contractAddress && provider) {
@@ -29,25 +28,31 @@ const HomeContainer = () => {
 	}, [contractAddress, provider, signer, user]);
 
 	return (
-		<If
-			condition={user.exists}
-			then={
-				<div className=" min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
-					<If
-						condition={!!contract}
-						then={<MintPageComp2 />}
-					/>
+		<div className=" min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat ">
+			<div className="flex justify-center items-center flex-col">
+				<LogoComp />
+				<div className="text-center text-[#ffa800]">
+					{' '}
+					Unique Multiverse storyline
+					<div>20K+ possible mix of traits & layers</div>
+					<div>Demi-Gods, Demons & Creatures 80+ Unique Characters</div>
+					<div>8+ Clans</div>
+					<div>Possibilities are endless!</div>
+					<div>Panchbhut Gameverse Collect now to see</div>
+					<div>what's in store for you! </div>
 				</div>
-			}
-			else={
-				<div className="md:flex md:justify-center min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat md:items-center">
-					<If
-						condition={!!contract}
-						then={<MintPage contract={contract} />}
-					/>
+				<div>
+					<button
+						className="bg-collect-button w-[368px] h-20 object-contain text-[#0e0e0e] flex justify-center items-center bg-no-repeat rounded"
+						onClick={() => push('/mint-page')}
+					>
+						Collect & Discover
+					</button>
 				</div>
-			}
-		/>
+			</div>
+		</div>
+		// 	}
+		// />
 	);
 };
 
