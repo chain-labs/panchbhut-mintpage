@@ -3,7 +3,7 @@ import Head from 'next/head';
 import React from 'react';
 import HomeContainer from '../src/containers/home';
 
-const Home: NextPage = () => {
+const Home = () => {
 	return (
 		<React.Fragment>
 			<HomeContainer />
