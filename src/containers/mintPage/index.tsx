@@ -139,14 +139,16 @@ const MintPageComp = ({contract}) => {
 				<If
 					condition={showDiscountComp}
 					then={
-						<DiscountCodeComp
-							setDiscountCode={setDiscountCode}
-							setShowDiscountComp={setShowDiscountComp}
-							discountCode={discountCode}
-						/>
+						<div className="flex justify-center items-center absolute top-[25%]">
+							<DiscountCodeComp
+								setDiscountCode={setDiscountCode}
+								setShowDiscountComp={setShowDiscountComp}
+								discountCode={discountCode}
+							/>
+						</div>
 					}
 					else={
-						<div className="flex justify-center items-center flex-col gap-10">
+						<div className="flex justify-center items-center flex-col gap-14">
 							<LogoComp />
 
 							<If
@@ -216,7 +218,7 @@ const MintPageComp = ({contract}) => {
 												APPLY COUPON CODE
 											</a>
 											<button
-												className="bg-collect-button w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
+												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 												onClick={mintController}
 											>
 												<div className="mt-3">

@@ -14,9 +14,9 @@ const DiscountCodeComp = ({
 	discountCode,
 }: Props) => {
 	return (
-		<div className="flex bg-coupon-code-lg bg-no-repeat w-[50%] relative top-[150px]  justify-items-center items-center flex-col">
+		<div className="flex bg-coupon-code-lg bg-no-repeat w-[693px] h-[419px] justify-center items-center flex-col ">
 			<div
-				className="relative left-[45%] top-2"
+				className="relative left-[45%] top-[-7px]"
 				onClick={() => setShowDiscountComp(false)}
 			>
 				<Image
