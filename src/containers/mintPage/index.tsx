@@ -216,7 +216,7 @@ const MintPageComp = ({contract}) => {
 												APPLY COUPON CODE
 											</a>
 											<button
-												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
+												className="bg-collect-button w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 												onClick={mintController}
 											>
 												<div className="mt-3">
