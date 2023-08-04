@@ -128,9 +128,6 @@ const MintPageComp = ({contract}) => {
 		if (noOfTokens > perTransactionLimit) {
 			setNoOfTokens(perTransactionLimit);
 		}
-		if (noOfTokens > perWalletLimit - tokensMinted) {
-			setNoOfTokens(perWalletLimit - tokensMinted);
-		}
 	}, [noOfTokens]);
 
 	return (
