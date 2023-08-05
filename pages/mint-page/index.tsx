@@ -9,6 +9,10 @@ import {CONTRACT_ADDRESS} from 'src/utils/constants';
 import {useAppSelector} from 'redux/hooks';
 import {userSelector} from 'redux/user';
 import {useRouter} from 'next/router';
+import {networkSelector} from 'src/redux/network';
+import If from 'src/components/If';
+import ConnectWallet from 'src/components/Navbar/ConnectWallet';
+import {useDispatch} from 'react-redux';
 
 const MintPage = () => {
 	const provider = useProvider();
@@ -16,19 +20,34 @@ const MintPage = () => {
 	const contractAddress = CONTRACT_ADDRESS;
 	const {data: signer} = useSigner();
 	const user = useAppSelector(userSelector);
+	const network = useAppSelector(networkSelector);
+	const [contractExists, setContractExists] = useState<boolean>(false);
+	const dispatch = useDispatch();
 
 	useEffect(() => {
-		if (contractAddress && provider) {
+		if (contractAddress && provider && network.isValid) {
 			const abi = getContractDetails();
 			const contract = new ethers.Contract(contractAddress, abi, signer);
 			console.log(contract);
+			console.log(signer);
 			setContract(contract);
+			console.log('contract added');
+			setContractExists(true);
+			console.log('contract present added');
 		}
-	}, [contractAddress, provider, signer, user]);
+	}, [network.isValid]);
 
 	return (
-		<div>
-			<MintPageComp contract={contract} />
+		<div className=" min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
+			<If
+				condition={network.isValid && contractExists}
+				then={
+					<div>
+						<MintPageComp contract={contract} />
+					</div>
+				}
+				else={<ConnectWallet />}
+			/>
 		</div>
 	);
 };

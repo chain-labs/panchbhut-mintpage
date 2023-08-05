@@ -1,13 +1,13 @@
 import { configureStore, Action, ThunkAction } from '@reduxjs/toolkit'
 import { createWrapper } from 'next-redux-wrapper'
-// import { networkReducer } from './network'
 import { userReducer } from './user/reducers'
+import { networkReducer } from './network'
 
 const makeStore = () =>
   configureStore({
     reducer: {
       user: userReducer,
-    //   network: networkReducer,
+      network: networkReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({ serializableCheck: false }),

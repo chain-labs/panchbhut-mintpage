@@ -13,6 +13,8 @@ import LogoComp from './components/LogoComp';
 import Image from 'next/image';
 import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
+import {networkSelector} from 'src/redux/network';
+import Buttonbg from 'public/static/images/BUTTON.png';
 
 const MintPageComp = ({contract}) => {
 	const [saleCategory, setSaleCategory] = useState();
@@ -21,7 +23,7 @@ const MintPageComp = ({contract}) => {
 	const [mintType, setMintType] = useState<number>();
 	const {data: signer} = useSigner();
 	const [price, setPrice] = useState<BigNumber>();
-	const [noOfTokens, setNoOfTokens] = useState<number>();
+	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
 	const [discountCode, setDiscountCode] = useState('');
 	const user = useAppSelector(userSelector);
@@ -30,11 +32,15 @@ const MintPageComp = ({contract}) => {
 	const [loading, setLoading] = useState(false);
 	const [perTransactionLimit, setPerTransactionLimit] = useState<number>();
 	const [perWalletLimit, setPerWalletLimit] = useState<number>();
+	const provider = useProvider();
+	const network = useAppSelector(networkSelector);
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
+			console.log(contract);
 			try {
-				const saleCategory = await contract.callStatic?.getSaleCategory(1);
+				console.log(contract);
+				const saleCategory = await contract?.callStatic?.getSaleCategory(1);
 				setSaleCategory(saleCategory);
 				console.log('sale category', saleCategory);
 			} catch (err) {
@@ -42,7 +48,8 @@ const MintPageComp = ({contract}) => {
 			}
 		};
 
-		if (contract) {
+		if (contract && network.isValid) {
+			console.log(contract?.callStatic?.getSaleCategory(1));
 			getSaleCategory();
 		}
 	}, [contract]);
@@ -60,6 +67,13 @@ const MintPageComp = ({contract}) => {
 			const tokens_minted = saleCategory['tokensMinted'];
 			const transactionsLimit = saleCategory['perTransactionLimit'];
 			const walletLimit = saleCategory['perWalletLimit'];
+			const balance = provider.getBalance(contract.address).then(balance => {
+				// convert a currency unit from wei to ether
+				const balanceInEth = ethers.utils.formatEther(balance);
+				console.log(`balance: ${balanceInEth} ETH`);
+			});
+			console.log(balance);
+			// console.log(ethers.utils.formatUnits(balance));
 			setPerTransactionLimit(parseInt(transactionsLimit));
 			setPerWalletLimit(parseInt(walletLimit));
 			setSupply(parseInt(nftSupply));
@@ -68,7 +82,7 @@ const MintPageComp = ({contract}) => {
 			setDiscounted(isDiscountEnabled);
 			setAllowListed(getIsMintAllowListed(merkleRoot));
 		}
-	}, [saleCategory]);
+	}, [saleCategory, contract]);
 
 	useEffect(() => {
 		//It checks allowlisted and discounted conditions and the setMintType accordingly
@@ -149,11 +163,11 @@ const MintPageComp = ({contract}) => {
 							<LogoComp />
 
 							<If
-								condition={user.exists}
+								condition={user.exists && network.isValid}
 								then={
 									<div className="flex flex-col gap-8">
 										<If
-											condition={saleCategory !== undefined}
+											condition={saleCategory !== undefined && network.isValid}
 											then={
 												<div className=" w-[500px] flex justify-around items-center text-[#ffa800]">
 													<div className="flex flex-col  items-center">
@@ -168,7 +182,9 @@ const MintPageComp = ({contract}) => {
 													</div>
 													<div className="flex flex-col  items-center">
 														<text>Minted</text>
-														<text>{tokensMinted ? tokensMinted : ''}</text>
+														<text>
+															{tokensMinted ? tokensMinted : 0}/{supply}
+														</text>
 													</div>
 												</div>
 											}
@@ -193,6 +209,8 @@ const MintPageComp = ({contract}) => {
 														// @ts-ignore
 														e.target?.blur();
 													}}
+													min="1"
+													max={`${perTransactionLimit}`}
 													value={noOfTokens}
 													onChange={e =>
 														setNoOfTokens(parseInt(e.target?.value))
@@ -214,14 +232,19 @@ const MintPageComp = ({contract}) => {
 											>
 												APPLY COUPON CODE
 											</a>
-											<button
-												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
+											<div
+												className=""
 												onClick={mintController}
 											>
-												<div className="mt-3">
+												<div className="z-0 text-white">
 													{loading ? 'MINTING' : 'MINT'}
 												</div>
-											</button>
+												<Image
+													className="w-[100px] absolute top-[12px] z-[10]"
+													src={Buttonbg}
+													alt=""
+												/>
+											</div>
 										</div>
 									</div>
 								}

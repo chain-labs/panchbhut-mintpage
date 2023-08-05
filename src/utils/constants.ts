@@ -34,7 +34,7 @@ export const getEtherscanUrl = () => {
     case '5':
       return `https://goerli.etherscan.io/address/${CONTRACT_ADDRESS}`
     case '1':
-      return `https://polygonscan.com/address/${CONTRACT_ADDRESS}`
+      return `https://etherscan.io/address/${CONTRACT_ADDRESS}`
   }
 }
 

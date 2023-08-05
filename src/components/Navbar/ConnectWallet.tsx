@@ -6,63 +6,115 @@ import {
 	useConnectModal,
 } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import {useAccount} from 'wagmi';
-import {useAppDispatch} from '../../redux/hooks';
-import {setUser} from '../../redux/user';
-
+import {
+	chain,
+	useAccount,
+	useEnsName,
+	useProvider,
+	useSwitchNetwork,
+} from 'wagmi';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {removeUser, setUser, userSelector} from '../../redux/user';
+import {networkSelector, setNetwork} from 'src/redux/network';
+import {Chain} from 'wagmi';
+import {getChain} from 'src/utils/constants';
 const ConnectWallet = () => {
 	const dispatch = useAppDispatch();
 	const {openConnectModal} = useConnectModal();
 	const {openAccountModal} = useAccountModal();
 	const {openChainModal} = useChainModal();
 	const account = useAccount();
+	const user = useAppSelector(userSelector);
+	const {isDisconnected} = useAccount();
+	const provider = useProvider();
+	const network = useAppSelector(networkSelector);
+	const {switchNetwork} = useSwitchNetwork();
 
 	useEffect(() => {
 		if (account?.address) {
 			dispatch(setUser(account.address));
 		}
-	}, [account]);
+	}, [account, network.isValid]);
+
+	useEffect(() => {
+		if (isDisconnected) {
+			dispatch(removeUser());
+		}
+	}, [isDisconnected]);
+
+	useEffect(() => {
+		console.log(provider);
+	}, [provider]);
+
+	useEffect(() => {
+		if (user.exists) {
+			console.log(user);
+		} else {
+			console.log('not exist');
+		}
+	}, [user.exists]);
+
+	const changeNetwork = () => {
+		const correctChain = getChain();
+		switchNetwork?.(parseInt(correctChain));
+	};
 
 	return (
-		<div>
-			<ConnectButton.Custom>
-				{({
-					account,
-					chain,
+		<ConnectButton.Custom>
+			{({
+				account,
+				chain,
+				openConnectModal,
+				openChainModal,
+				openAccountModal,
+			}) => {
+				// const {data: ens} = useEnsName({
+				// 	address: user.address,
+				// 	onError: err => {
+				// 		console.log("Error getting user's ENS name", err); // eslint-disable-line no-console
+				// 	},
+				// });
 
-					authenticationStatus,
-					mounted,
-				}) => {
-					const ready = mounted && authenticationStatus !== 'loading';
-					const connected =
-						ready &&
-						account &&
-						chain &&
-						(!authenticationStatus || authenticationStatus === 'authenticated');
-					return (
-						<div>
-							{(() => {
-								if (!connected) {
-									return (
-										<button
-											onClick={openConnectModal}
-											type="button"
-											className="mr-3 rounded-lg bg-yellow-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-violet-300  md:mr-0"
-										>
-											Connect Wallet
-										</button>
-									);
-								}
-								if (chain.unsupported) {
-									return (
-										<button
-											onClick={openChainModal}
-											type="button"
-										>
-											Wrong network
-										</button>
-									);
-								}
+				useEffect(() => {
+					if (user.address) {
+						dispatch(setNetwork({chainId: chain?.id, name: chain?.name}));
+						console.log(chain?.id, chain?.name);
+					}
+				}, [user, chain?.id]);
+
+				// useEffect(() => {
+
+				// }, [chain])
+
+				return (
+					<div>
+						{(() => {
+							if (!user.exists) {
+								return (
+									<button
+										onClick={openConnectModal}
+										type="button"
+										className="mr-3 rounded-lg bg-yellow-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-violet-300  md:mr-0"
+									>
+										Connect Wallet
+									</button>
+								);
+							}
+							if (!network.isValid) {
+								console.log(network.isValid);
+								return (
+									<button
+										onClick={changeNetwork}
+										type="button"
+										className="mr-3 rounded-lg bg-violet-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300   md:mr-0"
+									>
+										Please switch network
+									</button>
+								);
+							}
+							if (user.exists && network.isValid) {
+								console.log(network.isValid);
+
 								return (
 									<div
 										style={{display: 'flex', gap: 12}}
@@ -73,7 +125,7 @@ const ConnectWallet = () => {
 											style={{display: 'flex', alignItems: 'center'}}
 											type="button"
 										>
-											{chain.hasIcon && (
+											{chain?.hasIcon && (
 												<div
 													style={{
 														background: chain.iconBackground,
@@ -84,7 +136,7 @@ const ConnectWallet = () => {
 														marginRight: 4,
 													}}
 												>
-													{chain.iconUrl && (
+													{chain?.iconUrl && (
 														<img
 															alt={chain.name ?? 'Chain icon'}
 															src={chain.iconUrl}
@@ -93,7 +145,7 @@ const ConnectWallet = () => {
 													)}
 												</div>
 											)}
-											{chain.name}
+											{chain?.name}
 										</button>
 										<button
 											onClick={openAccountModal}
@@ -106,12 +158,12 @@ const ConnectWallet = () => {
 										</button>
 									</div>
 								);
-							})()}
-						</div>
-					);
-				}}
-			</ConnectButton.Custom>
-		</div>
+							}
+						})()}
+					</div>
+				);
+			}}
+		</ConnectButton.Custom>
 	);
 };
 

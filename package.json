@@ -12,7 +12,7 @@
 		"@arcana/auth": "^1.0.3",
 		"@arcana/auth-react": "^0.0.3",
 		"@gelatonetwork/relay-sdk": "^3.5.0",
-		"@rainbow-me/rainbowkit": "0.5.0",
+		"@rainbow-me/rainbowkit": "^0.5.3",
 		"@reduxjs/toolkit": "^1.9.2",
 		"@svgr/webpack": "^6.5.1",
 		"akar-icons": "^1.9.17",
@@ -34,7 +34,7 @@
 		"styled-components": "^5.3.6",
 		"styled-system": "^5.1.5",
 		"urql": "^3.0.4",
-		"wagmi": "0.6.4"
+		"wagmi": "^0.6.6"
 	},
 	"devDependencies": {
 		"@styled-system/prop-types": "^5.1.5",
