@@ -14,7 +14,7 @@ module.exports = {
 				'mint-page-lg': "url('/static/images/mint_page_mintpage.jpg')",
 				'collect-button': "url('/static/images/collect_button.png')",
 				'input-lg': "url('/static/images/input_bg.png",
-				'button-sm': "url('/static/images/button.png')",
+				'button-sm': "url('/static/images/button_bg.png')",
 				'coupon-code-lg': "url('/static/images/coupon_code.jpg')",
 			},
 		},
