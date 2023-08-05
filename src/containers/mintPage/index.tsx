@@ -168,7 +168,9 @@ const MintPageComp = ({contract}) => {
 													</div>
 													<div className="flex flex-col  items-center">
 														<text>Minted</text>
-														<text>{tokensMinted ? tokensMinted : ''}</text>
+														<text>
+															{tokensMinted ? tokensMinted : 0}/{supply}
+														</text>
 													</div>
 												</div>
 											}
@@ -193,6 +195,8 @@ const MintPageComp = ({contract}) => {
 														// @ts-ignore
 														e.target?.blur();
 													}}
+													min={1}
+													max={`${perTransactionLimit}`}
 													value={noOfTokens}
 													onChange={e =>
 														setNoOfTokens(parseInt(e.target?.value))
