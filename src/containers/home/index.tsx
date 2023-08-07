@@ -10,6 +10,7 @@ import {useAppSelector} from 'redux/hooks';
 import {userSelector} from 'redux/user';
 import MintPage from '../mintPage';
 import ConnectWallet from 'src/components/Navbar/ConnectWallet';
+import Test from './Test';
 
 const HomeContainer = () => {
 	const provider = useProvider();
@@ -34,7 +35,8 @@ const HomeContainer = () => {
 				then={
 					<If
 						condition={!!contract}
-						then={<MintPage contract={contract} />}
+						// then={<MintPage contract={contract} />}
+						then={<Test />}
 					/>
 				}
 				else={<ConnectWallet />}

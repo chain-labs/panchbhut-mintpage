@@ -14,7 +14,6 @@ const Home: NextPage = () => {
 					href=" https://pranapsivadasan.github.io/panchbhut/assets/navLogo.png"
 				/>
 			</Head>
-			<Test/>
 			<HomeContainer />
 		</React.Fragment>
 	);
