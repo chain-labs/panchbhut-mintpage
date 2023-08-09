@@ -29,6 +29,7 @@
 		"react-hot-toast": "^2.2.0",
 		"react-is": "^18.2.0",
 		"react-redux": "^8.0.5",
+		"react-router-dom": "^6.14.2",
 		"sass": "^1.52.3",
 		"styled-components": "^5.3.6",
 		"styled-system": "^5.1.5",
