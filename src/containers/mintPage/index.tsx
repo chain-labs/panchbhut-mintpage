@@ -23,7 +23,7 @@ const MintPageComp = ({contract}) => {
 	const [price, setPrice] = useState<BigNumber>();
 	const [noOfTokens, setNoOfTokens] = useState<number>();
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
-	const [discountCode, setDiscountCode] = useState('');
+	const [discountCode, setDiscountCode] = useState<object>({});
 	const user = useAppSelector(userSelector);
 	const [supply, setSupply] = useState<number>();
 	const [tokensMinted, setTokensMinted] = useState<number>();
@@ -34,7 +34,9 @@ const MintPageComp = ({contract}) => {
 	useEffect(() => {
 		const getSaleCategory = async () => {
 			try {
-				const saleCategory = await contract.callStatic?.getSaleCategory(1);
+				const saleCategory = await contract.callStatic?.getSaleCategory(
+					SALE_ID.PUBLIC
+				);
 				setSaleCategory(saleCategory);
 				console.log('sale category', saleCategory);
 			} catch (err) {
@@ -101,9 +103,11 @@ const MintPageComp = ({contract}) => {
 						?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
 							value: BigNumber.from(noOfTokens).mul(price),
 						});
+
 					const event = (await transaction.wait()).events?.filter(
-						event => event.event === 'ApprovalForAll'
+						event => event.event
 					);
+					console.log(transaction);
 					setLoading(false);
 					console.log(event);
 				} catch (error) {
@@ -112,7 +116,44 @@ const MintPageComp = ({contract}) => {
 					setLoading(false);
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
+				// if (discountCode) {
 				console.log('Mint is discounted');
+				const discount_code = {
+					discountIndex: 0,
+					discountedPrice: BigNumber.from('0x09184e72a000'),
+					discountSignature:
+						'0xc6d336b0b783848226c3e9813efbc000e51caf232415de13fe4d7c7ea5310018262ef7b0a0a51cc33cf6af9c1e38e683a8e62c636cfdd454cd1561a60bce475b1b',
+				};
+				// console.log(discountCode?.discountedPrice.toHex)
+				try {
+					console.log(discount_code);
+					const transaction = await contract
+						?.connect(signer)
+						?.mintDiscounted(
+							user.address,
+							noOfTokens,
+							parseInt(SALE_ID.DISCOUNTED),
+							discount_code?.discountIndex,
+							discount_code?.discountedPrice,
+							discount_code?.discountSignature,
+							{
+								value: BigNumber.from(noOfTokens).mul(
+									discount_code.discountedPrice
+								),
+							}
+						);
+					console.log('Transaction:', transaction);
+					const event = (await transaction.wait()).events?.filter(
+						event => event.event === 'ApprovalForAll'
+					);
+					setLoading(false);
+					// console.log(event);
+				} catch (error) {
+					console.log({error});
+					toast(`❌ Something went wrong! Please Try Again`);
+					setLoading(false);
+				}
+				// }
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
 			}
@@ -155,7 +196,7 @@ const MintPageComp = ({contract}) => {
 										<If
 											condition={saleCategory !== undefined}
 											then={
-												<div className=" w-[500px] flex justify-around items-center text-[#ffa800]">
+												<div className=" w-[500px] flex justify-around items-center text-[#ffa800] text-[17px]">
 													<div className="flex flex-col  items-center">
 														<text>Supply</text>
 														<text>{supply ? supply : ''}</text>
@@ -177,7 +218,9 @@ const MintPageComp = ({contract}) => {
 										/>
 
 										<div className="flex flex-col items-center">
-											<label className="text-[#ffa800]">MINT QTY</label>
+											<label className="text-[#ffa800] text-[13px]">
+												MINT QTY
+											</label>
 											<div className="flex justify-center items-center gap-2">
 												<button
 													className="mt-2"
@@ -213,7 +256,7 @@ const MintPageComp = ({contract}) => {
 												</button>
 											</div>
 											<a
-												className="text-[#5fca00] cursor-pointer"
+												className="text-[#5fca00] text-[10px] cursor-pointer"
 												onClick={e => setShowDiscountComp(true)}
 											>
 												APPLY COUPON CODE
@@ -222,7 +265,7 @@ const MintPageComp = ({contract}) => {
 												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 												onClick={mintController}
 											>
-												<div className="mt-3">
+												<div className="mt-3 font-bold">
 													{loading ? 'MINTING' : 'MINT'}
 												</div>
 											</button>
