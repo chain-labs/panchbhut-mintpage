@@ -29,12 +29,7 @@ const ConnectWallet = () => {
 	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
 	const {switchNetwork} = useSwitchNetwork();
-
-	useEffect(() => {
-		if (account?.address) {
-			dispatch(setUser(account.address));
-		}
-	}, [account, network.isValid]);
+	const correctChain = getChain();
 
 	useEffect(() => {
 		if (isDisconnected) {
@@ -55,10 +50,9 @@ const ConnectWallet = () => {
 	}, [user.exists]);
 
 	const changeNetwork = () => {
-		const correctChain = getChain();
 		switchNetwork?.(parseInt(correctChain));
 	};
-
+	useEffect(() => {}, [network]);
 	return (
 		<ConnectButton.Custom>
 			{({
@@ -68,13 +62,6 @@ const ConnectWallet = () => {
 				openChainModal,
 				openAccountModal,
 			}) => {
-				// const {data: ens} = useEnsName({
-				// 	address: user.address,
-				// 	onError: err => {
-				// 		console.log("Error getting user's ENS name", err); // eslint-disable-line no-console
-				// 	},
-				// });
-
 				useEffect(() => {
 					if (user.address) {
 						dispatch(setNetwork({chainId: chain?.id, name: chain?.name}));
@@ -82,14 +69,18 @@ const ConnectWallet = () => {
 					}
 				}, [user, chain?.id]);
 
-				// useEffect(() => {
-
-				// }, [chain])
+				useEffect(() => {
+					if (account?.address) {
+						if (chain?.id === parseInt(correctChain)) {
+							dispatch(setUser(account.address));
+						}
+					}
+				}, [account]);
 
 				return (
 					<div>
 						{(() => {
-							if (!user.exists) {
+							if (!account?.address) {
 								return (
 									<button
 										onClick={openConnectModal}
@@ -100,8 +91,7 @@ const ConnectWallet = () => {
 									</button>
 								);
 							}
-							if (!network.isValid) {
-								console.log(network.isValid);
+							if (chain?.id !== parseInt(correctChain)) {
 								return (
 									<button
 										onClick={changeNetwork}
