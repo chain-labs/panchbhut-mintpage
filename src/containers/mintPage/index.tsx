@@ -145,7 +145,7 @@ const MintPageComp = ({contract}) => {
 	}, [noOfTokens]);
 
 	return (
-		<div className=" min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
+		<div className="min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
 			<div className="flex justify-center items-center flex-col">
 				<If
 					condition={showDiscountComp}
@@ -161,7 +161,6 @@ const MintPageComp = ({contract}) => {
 					else={
 						<div className="flex justify-center items-center flex-col gap-14">
 							<LogoComp />
-
 							<If
 								condition={user.exists && network.isValid}
 								then={
@@ -232,23 +231,24 @@ const MintPageComp = ({contract}) => {
 											>
 												APPLY COUPON CODE
 											</a>
-											<div
-												className=""
+											<button
+												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 												onClick={mintController}
 											>
-												<div className="z-0 text-white">
+												<div className="mt-3">
 													{loading ? 'MINTING' : 'MINT'}
 												</div>
-												<Image
-													className="w-[100px] absolute top-[12px] z-[10]"
-													src={Buttonbg}
-													alt=""
-												/>
-											</div>
+											</button>
 										</div>
 									</div>
 								}
-								else={<ConnectWallet />}
+								else={
+									<div className="flex justify-center items-center flex-col gap-14">
+										<div className="w-[500px] flex justify-center items-center">
+											<ConnectWallet />
+										</div>
+									</div>
+								}
 							/>
 						</div>
 					}
