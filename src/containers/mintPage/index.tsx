@@ -208,7 +208,7 @@ const MintPageComp = ({contract}) => {
 														// @ts-ignore
 														e.target?.blur();
 													}}
-													min="1"
+													min={1}
 													max={`${perTransactionLimit}`}
 													value={noOfTokens}
 													onChange={e =>
