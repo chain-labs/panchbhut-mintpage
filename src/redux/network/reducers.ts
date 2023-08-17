@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
 import {  TEST_ENV } from 'src/utils/constants';
-import { disconnect, setNetwork } from './actions';
+import {  setNetwork } from './actions';
 import { NetworkState } from './types';
 
 const initialState: NetworkState = {
@@ -27,9 +27,7 @@ export const networkReducer = createReducer(initialState, (builder) => {
 			return newState;
 		})
 		
-		.addCase(disconnect, (state) => {
-			return { ...initialState, subgraphUrl: state.subgraphUrl };
-		});
+		
 });
 
 const getUnit = (chainId: number): string => {

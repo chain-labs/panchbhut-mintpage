@@ -1,41 +1,19 @@
 import React, {useEffect} from 'react';
-import {
-	ConnectButton,
-	useAccountModal,
-	useChainModal,
-	useConnectModal,
-} from '@rainbow-me/rainbowkit';
+import {ConnectButton} from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import {
-	chain,
-	useAccount,
-	useEnsName,
-	useProvider,
-	useSwitchNetwork,
-} from 'wagmi';
+import {useProvider, useSwitchNetwork} from 'wagmi';
 import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {removeUser, setUser, userSelector} from '../../redux/user';
+import {setUser, userSelector} from '../../redux/user';
 import {networkSelector, setNetwork} from 'src/redux/network';
-import {Chain} from 'wagmi';
 import {getChain} from 'src/utils/constants';
 const ConnectWallet = () => {
 	const dispatch = useAppDispatch();
-	const {openConnectModal} = useConnectModal();
-	const {openAccountModal} = useAccountModal();
-	const {openChainModal} = useChainModal();
-	const account = useAccount();
+
 	const user = useAppSelector(userSelector);
-	const {isDisconnected} = useAccount();
 	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
 	const {switchNetwork} = useSwitchNetwork();
 	const correctChain = getChain();
-
-	useEffect(() => {
-		if (isDisconnected) {
-			dispatch(removeUser());
-		}
-	}, [isDisconnected]);
 
 	useEffect(() => {
 		console.log(provider);

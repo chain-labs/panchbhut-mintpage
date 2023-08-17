@@ -4,4 +4,3 @@ export const setNetwork = createAction<{ chainId: number; name: string }>('netwo
 
 
 
-export const disconnect = createAction('network/DISCONNECT');
