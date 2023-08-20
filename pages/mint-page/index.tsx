@@ -38,7 +38,7 @@ const MintPage = () => {
 	}, [network.isValid]);
 
 	return (
-		<div className=" min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
+		<div className=" min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat flex justify-center items-center">
 			<If
 				condition={network.isValid && contractExists}
 				then={
@@ -46,7 +46,13 @@ const MintPage = () => {
 						<MintPageComp contract={contract} />
 					</div>
 				}
-				else={<ConnectWallet />}
+				else={
+					<div className="flex justify-center items-center flex-col">
+						{/* <div className="w-[500px] flex justify-center items-center top-52"> */}
+						<ConnectWallet />
+						{/* </div> */}
+					</div>
+				}
 			/>
 		</div>
 	);

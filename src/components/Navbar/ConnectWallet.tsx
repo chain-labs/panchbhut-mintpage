@@ -1,36 +1,26 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {ConnectButton} from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import {useProvider, useSwitchNetwork} from 'wagmi';
+import {useSwitchNetwork} from 'wagmi';
 import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {setUser, userSelector} from '../../redux/user';
+import {removeUser, setProvider, setUser, userSelector} from '../../redux/user';
 import {networkSelector, setNetwork} from 'src/redux/network';
-import {getChain} from 'src/utils/constants';
+import {TEST_ENV, getChain, getNetwork} from 'src/utils/constants';
+import {networks} from 'src/redux/user/types';
 const ConnectWallet = () => {
 	const dispatch = useAppDispatch();
 
 	const user = useAppSelector(userSelector);
-	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
 	const {switchNetwork} = useSwitchNetwork();
 	const correctChain = getChain();
-
-	useEffect(() => {
-		console.log(provider);
-	}, [provider]);
-
-	useEffect(() => {
-		if (user.exists) {
-			console.log(user);
-		} else {
-			console.log('not exist');
-		}
-	}, [user.exists]);
+	const [wrongNetwork, setWrongNetwork] = useState(false);
 
 	const changeNetwork = () => {
 		switchNetwork?.(parseInt(correctChain));
 	};
 	useEffect(() => {}, [network]);
+
 	return (
 		<ConnectButton.Custom>
 			{({
@@ -40,6 +30,56 @@ const ConnectWallet = () => {
 				openChainModal,
 				openAccountModal,
 			}) => {
+				useEffect(() => {
+					if (process.browser) {
+						// @ts-expect-error ethereum in window is not defined
+						window?.ethereum.on('chainChanged', chainId => {
+							const chain = parseInt(chainId, 16);
+
+							if (TEST_ENV) {
+								if (correctChain == chain.toString()) {
+									setWrongNetwork(false);
+									dispatch(
+										setNetwork({
+											chain: chainId,
+											name: networks?.[chainId]?.name,
+											id: networks?.[chainId]?.id,
+										})
+									);
+								} else {
+									setWrongNetwork(true);
+									dispatch(removeUser());
+								}
+							} else {
+								setWrongNetwork(false);
+								dispatch(
+									setNetwork({
+										chain: chainId,
+										name: networks?.[chainId]?.name,
+										id: networks?.[chainId]?.id,
+									})
+								);
+							}
+						});
+					}
+				}, []);
+
+				useEffect(() => {
+					if (user.signer) {
+						try {
+							user.signer
+								.getAddress()
+								.then(address => {
+									dispatch(setUser(address));
+								})
+								.catch(err => {
+									console.log({err});
+								});
+						} catch (err) {
+							console.log(err);
+						}
+					}
+				}, [user.signer]);
 				useEffect(() => {
 					if (user.address) {
 						dispatch(setNetwork({chainId: chain?.id, name: chain?.name}));
@@ -80,9 +120,7 @@ const ConnectWallet = () => {
 									</button>
 								);
 							}
-							if (user.exists && network.isValid) {
-								console.log(network.isValid);
-
+							if (user.exists) {
 								return (
 									<div
 										style={{display: 'flex', gap: 12}}

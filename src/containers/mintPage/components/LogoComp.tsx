@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export default function LogoComp() {
 	return (
-		<div className="mt-10 mb-10">
+		<div className="mt-[-100px] mb-10">
 			<Image
 				src={menuLogoImg}
 				alt="react logo"

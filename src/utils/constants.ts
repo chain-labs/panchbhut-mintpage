@@ -18,6 +18,9 @@ export const getNetwork = () => {
 
 export const NETWORK: string = getNetwork()
 
+export const testNetworks = [5, 80001];
+
+
 export const getChain = () => {
   switch (NETWORK) {
     case 'goerli':
