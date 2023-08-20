@@ -32,33 +32,14 @@ const ConnectWallet = () => {
 			}) => {
 				useEffect(() => {
 					if (process.browser) {
-						// @ts-expect-error ethereum in window is not defined
 						window?.ethereum.on('chainChanged', chainId => {
 							const chain = parseInt(chainId, 16);
 
-							if (TEST_ENV) {
-								if (correctChain == chain.toString()) {
-									setWrongNetwork(false);
-									dispatch(
-										setNetwork({
-											chain: chainId,
-											name: networks?.[chainId]?.name,
-											id: networks?.[chainId]?.id,
-										})
-									);
-								} else {
-									setWrongNetwork(true);
-									dispatch(removeUser());
-								}
-							} else {
+							if (correctChain == chain.toString()) {
 								setWrongNetwork(false);
-								dispatch(
-									setNetwork({
-										chain: chainId,
-										name: networks?.[chainId]?.name,
-										id: networks?.[chainId]?.id,
-									})
-								);
+							} else {
+								setWrongNetwork(true);
+								dispatch(removeUser());
 							}
 						});
 					}
