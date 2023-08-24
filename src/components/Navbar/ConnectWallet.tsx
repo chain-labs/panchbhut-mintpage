@@ -1,68 +1,107 @@
-import React, {useEffect} from 'react';
-import {
-	ConnectButton,
-	useAccountModal,
-	useChainModal,
-	useConnectModal,
-} from '@rainbow-me/rainbowkit';
+import React, {useEffect, useState} from 'react';
+import {ConnectButton} from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import {useAccount} from 'wagmi';
-import {useAppDispatch} from '../../redux/hooks';
-import {setUser} from '../../redux/user';
-
+import {useSwitchNetwork} from 'wagmi';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {removeUser, setProvider, setUser, userSelector} from '../../redux/user';
+import {networkSelector, setNetwork} from 'src/redux/network';
+import {TEST_ENV, getChain, getNetwork} from 'src/utils/constants';
+import {networks} from 'src/redux/user/types';
 const ConnectWallet = () => {
 	const dispatch = useAppDispatch();
-	const {openConnectModal} = useConnectModal();
-	const {openAccountModal} = useAccountModal();
-	const {openChainModal} = useChainModal();
-	const account = useAccount();
 
-	useEffect(() => {
-		if (account?.address) {
-			dispatch(setUser(account.address));
-		}
-	}, [account]);
+	const user = useAppSelector(userSelector);
+	const network = useAppSelector(networkSelector);
+	const {switchNetwork} = useSwitchNetwork();
+	const correctChain = getChain();
+	const [wrongNetwork, setWrongNetwork] = useState(false);
+
+	const changeNetwork = () => {
+		switchNetwork?.(parseInt(correctChain));
+	};
+	useEffect(() => {}, [network]);
 
 	return (
-		<div>
-			<ConnectButton.Custom>
-				{({
-					account,
-					chain,
+		<ConnectButton.Custom>
+			{({
+				account,
+				chain,
+				openConnectModal,
+				openChainModal,
+				openAccountModal,
+			}) => {
+				useEffect(() => {
+					if (process.browser) {
+						window?.ethereum.on('chainChanged', chainId => {
+							const chain = parseInt(chainId, 16);
 
-					authenticationStatus,
-					mounted,
-				}) => {
-					const ready = mounted && authenticationStatus !== 'loading';
-					const connected =
-						ready &&
-						account &&
-						chain &&
-						(!authenticationStatus || authenticationStatus === 'authenticated');
-					return (
-						<div>
-							{(() => {
-								if (!connected) {
-									return (
-										<button
-											onClick={openConnectModal}
-											type="button"
-											className="mr-3 rounded-lg bg-yellow-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-violet-300  md:mr-0"
-										>
-											Connect Wallet
-										</button>
-									);
-								}
-								if (chain.unsupported) {
-									return (
-										<button
-											onClick={openChainModal}
-											type="button"
-										>
-											Wrong network
-										</button>
-									);
-								}
+							if (correctChain == chain.toString()) {
+								setWrongNetwork(false);
+							} else {
+								setWrongNetwork(true);
+								dispatch(removeUser());
+							}
+						});
+					}
+				}, []);
+
+				useEffect(() => {
+					if (user.signer) {
+						try {
+							user.signer
+								.getAddress()
+								.then(address => {
+									dispatch(setUser(address));
+								})
+								.catch(err => {
+									console.log({err});
+								});
+						} catch (err) {
+							console.log(err);
+						}
+					}
+				}, [user.signer]);
+				useEffect(() => {
+					if (user.address) {
+						dispatch(setNetwork({chainId: chain?.id, name: chain?.name}));
+						console.log(chain?.id, chain?.name);
+					}
+				}, [user, chain?.id]);
+
+				useEffect(() => {
+					if (account?.address) {
+						if (chain?.id === parseInt(correctChain)) {
+							dispatch(setUser(account.address));
+						}
+					}
+				}, [account]);
+
+				return (
+					<div>
+						{(() => {
+							if (!account?.address) {
+								return (
+									<button
+										onClick={openConnectModal}
+										type="button"
+										className="mr-3 rounded-lg bg-yellow-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-violet-300  md:mr-0"
+									>
+										Connect Wallet
+									</button>
+								);
+							}
+							if (chain?.id !== parseInt(correctChain)) {
+								return (
+									<button
+										onClick={changeNetwork}
+										type="button"
+										className="mr-3 rounded-lg bg-violet-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300   md:mr-0"
+									>
+										Please switch network
+									</button>
+								);
+							}
+							if (user.exists) {
 								return (
 									<div
 										style={{display: 'flex', gap: 12}}
@@ -73,7 +112,7 @@ const ConnectWallet = () => {
 											style={{display: 'flex', alignItems: 'center'}}
 											type="button"
 										>
-											{chain.hasIcon && (
+											{chain?.hasIcon && (
 												<div
 													style={{
 														background: chain.iconBackground,
@@ -84,7 +123,7 @@ const ConnectWallet = () => {
 														marginRight: 4,
 													}}
 												>
-													{chain.iconUrl && (
+													{chain?.iconUrl && (
 														<img
 															alt={chain.name ?? 'Chain icon'}
 															src={chain.iconUrl}
@@ -93,7 +132,7 @@ const ConnectWallet = () => {
 													)}
 												</div>
 											)}
-											{chain.name}
+											{chain?.name}
 										</button>
 										<button
 											onClick={openAccountModal}
@@ -106,12 +145,12 @@ const ConnectWallet = () => {
 										</button>
 									</div>
 								);
-							})()}
-						</div>
-					);
-				}}
-			</ConnectButton.Custom>
-		</div>
+							}
+						})()}
+					</div>
+				);
+			}}
+		</ConnectButton.Custom>
 	);
 };
 

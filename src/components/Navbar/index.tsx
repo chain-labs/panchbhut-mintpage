@@ -1,5 +1,4 @@
 import React from 'react';
-import ConnectWallet from './ConnectWallet';
 
 const Navbar = () => {
 	return (
@@ -12,9 +11,6 @@ const Navbar = () => {
 							target="_blank"
 							rel="noreferrer"
 						></a>
-					</div>
-					<div className="flex md:order-2">
-						<ConnectWallet />
 					</div>
 				</div>
 			</nav>

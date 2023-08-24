@@ -13,6 +13,8 @@ import LogoComp from './components/LogoComp';
 import Image from 'next/image';
 import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
+import {networkSelector} from 'src/redux/network';
+import Buttonbg from 'public/static/images/BUTTON.png';
 
 const MintPageComp = ({contract}) => {
 	const [saleCategory, setSaleCategory] = useState();
@@ -21,7 +23,7 @@ const MintPageComp = ({contract}) => {
 	const [mintType, setMintType] = useState<number>();
 	const {data: signer} = useSigner();
 	const [price, setPrice] = useState<BigNumber>();
-	const [noOfTokens, setNoOfTokens] = useState<number>();
+	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
 	const [discountCode, setDiscountCode] = useState('');
 	const user = useAppSelector(userSelector);
@@ -30,11 +32,15 @@ const MintPageComp = ({contract}) => {
 	const [loading, setLoading] = useState(false);
 	const [perTransactionLimit, setPerTransactionLimit] = useState<number>();
 	const [perWalletLimit, setPerWalletLimit] = useState<number>();
+	const provider = useProvider();
+	const network = useAppSelector(networkSelector);
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
+			console.log(contract);
 			try {
-				const saleCategory = await contract.callStatic?.getSaleCategory(1);
+				console.log(contract);
+				const saleCategory = await contract?.callStatic?.getSaleCategory(1);
 				setSaleCategory(saleCategory);
 				console.log('sale category', saleCategory);
 			} catch (err) {
@@ -42,7 +48,8 @@ const MintPageComp = ({contract}) => {
 			}
 		};
 
-		if (contract) {
+		if (contract && network.isValid) {
+			console.log(contract?.callStatic?.getSaleCategory(1));
 			getSaleCategory();
 		}
 	}, [contract]);
@@ -60,6 +67,13 @@ const MintPageComp = ({contract}) => {
 			const tokens_minted = saleCategory['tokensMinted'];
 			const transactionsLimit = saleCategory['perTransactionLimit'];
 			const walletLimit = saleCategory['perWalletLimit'];
+			const balance = provider.getBalance(contract.address).then(balance => {
+				// convert a currency unit from wei to ether
+				const balanceInEth = ethers.utils.formatEther(balance);
+				console.log(`balance: ${balanceInEth} ETH`);
+			});
+			console.log(balance);
+			// console.log(ethers.utils.formatUnits(balance));
 			setPerTransactionLimit(parseInt(transactionsLimit));
 			setPerWalletLimit(parseInt(walletLimit));
 			setSupply(parseInt(nftSupply));
@@ -68,7 +82,7 @@ const MintPageComp = ({contract}) => {
 			setDiscounted(isDiscountEnabled);
 			setAllowListed(getIsMintAllowListed(merkleRoot));
 		}
-	}, [saleCategory]);
+	}, [saleCategory, contract]);
 
 	useEffect(() => {
 		//It checks allowlisted and discounted conditions and the setMintType accordingly
@@ -131,110 +145,121 @@ const MintPageComp = ({contract}) => {
 	}, [noOfTokens]);
 
 	return (
-		<div className=" min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat">
-			<div className="flex justify-center items-center flex-col">
-				<If
-					condition={showDiscountComp}
-					then={
-						<div className="flex justify-center items-center absolute top-[25%]">
-							<DiscountCodeComp
-								setDiscountCode={setDiscountCode}
-								setShowDiscountComp={setShowDiscountComp}
-								discountCode={discountCode}
-							/>
-						</div>
-					}
-					else={
-						<div className="flex justify-center items-center flex-col gap-14">
-							<LogoComp />
-
-							<If
-								condition={user.exists}
-								then={
-									<div className="flex flex-col gap-8">
-										<If
-											condition={saleCategory !== undefined}
-											then={
-												<div className=" w-[500px] flex justify-around items-center text-[#ffa800]">
-													<div className="flex flex-col  items-center">
-														<text>Supply</text>
-														<text>{supply ? supply : ''}</text>
-													</div>
-													<div className="flex flex-col  items-center">
-														<text>Price</text>
-														<text>
-															{price ? ethers.utils.formatUnits(price) : ''} ETH
-														</text>
-													</div>
-													<div className="flex flex-col  items-center">
-														<text>Minted</text>
-														<text>
-															{tokensMinted ? tokensMinted : 0}/{supply}
-														</text>
-													</div>
+		<div className="flex justify-center items-center flex-col">
+			<If
+				condition={user.exists}
+				then={
+					// <div className="flex justify-center items-center absolute top-[25%]">
+					// 	<DiscountCodeComp
+					// 		setDiscountCode={setDiscountCode}
+					// 		setShowDiscountComp={setShowDiscountComp}
+					// 		discountCode={discountCode}
+					// 	/>
+					// </div>
+					<div className="flex justify-center items-center flex-col">
+						<LogoComp />
+						<If
+							condition={!showDiscountComp}
+							then={
+								<div className="flex flex-col gap-8">
+									<If
+										condition={saleCategory !== undefined && network.isValid}
+										then={
+											<div className=" w-[500px] flex justify-around items-center text-[#ffa800]">
+												<div className="flex flex-col  items-center">
+													<text>Supply</text>
+													<text>{supply ? supply : ''}</text>
 												</div>
-											}
-										/>
-
-										<div className="flex flex-col items-center">
-											<label className="text-[#ffa800]">MINT QTY</label>
-											<div className="flex justify-center items-center gap-2">
-												<button
-													className="mt-2"
-													onClick={e => setNoOfTokens(noOfTokens - 1)}
-												>
-													<Image
-														src={MinusImg}
-														alt=""
-													/>
-												</button>
-												<input
-													className="input w-20 h-[35px] bg-slate-300 rounded text-center text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-													type="number"
-													onWheel={e => {
-														// @ts-ignore
-														e.target?.blur();
-													}}
-													min={1}
-													max={`${perTransactionLimit}`}
-													value={noOfTokens}
-													onChange={e =>
-														setNoOfTokens(parseInt(e.target?.value))
-													}
-												/>
-												<button
-													className="mt-2"
-													onClick={e => setNoOfTokens(noOfTokens + 1)}
-												>
-													<Image
-														src={PlusImg}
-														alt=""
-													/>
-												</button>
+												<div className="flex flex-col  items-center">
+													<text>Price</text>
+													<text>
+														{price ? ethers.utils.formatUnits(price) : ''} ETH
+													</text>
+												</div>
+												<div className="flex flex-col  items-center">
+													<text>Minted</text>
+													<text>
+														{tokensMinted ? tokensMinted : 0}/{supply}
+													</text>
+												</div>
 											</div>
-											<a
-												className="text-[#5fca00] cursor-pointer"
-												onClick={e => setShowDiscountComp(true)}
-											>
-												APPLY COUPON CODE
-											</a>
+										}
+									/>
+
+									<div className="flex flex-col items-center">
+										<label className="text-[#ffa800]">MINT QTY</label>
+										<div className="flex justify-center items-center gap-2">
 											<button
-												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
-												onClick={mintController}
+												className="mt-2"
+												onClick={e => setNoOfTokens(noOfTokens - 1)}
 											>
-												<div className="mt-3">
-													{loading ? 'MINTING' : 'MINT'}
-												</div>
+												<Image
+													src={MinusImg}
+													alt=""
+												/>
+											</button>
+											<input
+												className="input w-20 h-[35px] bg-slate-300 rounded text-center text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+												type="number"
+												onWheel={e => {
+													// @ts-ignore
+													e.target?.blur();
+												}}
+												min={1}
+												max={`${perTransactionLimit}`}
+												value={noOfTokens}
+												onChange={e => setNoOfTokens(parseInt(e.target?.value))}
+											/>
+											<button
+												className="mt-2"
+												onClick={e => setNoOfTokens(noOfTokens + 1)}
+											>
+												<Image
+													src={PlusImg}
+													alt=""
+												/>
 											</button>
 										</div>
+										<a
+											className="text-[#5fca00] cursor-pointer"
+											onClick={e => setShowDiscountComp(true)}
+										>
+											APPLY COUPON CODE
+										</a>
+										<button
+											className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
+											onClick={mintController}
+										>
+											<div className="mt-3">{loading ? 'MINTING' : 'MINT'}</div>
+										</button>
 									</div>
-								}
-								else={<ConnectWallet />}
-							/>
+								</div>
+							}
+							else={
+								// <div className="flex justify-center items-center flex-col gap-14">
+								// 	<div className="w-[500px] flex justify-center items-center">
+								// 		<ConnectWallet />
+								// 	</div>
+								// </div>
+								<div className="flex justify-center items-center absolute top-[25%]">
+									<DiscountCodeComp
+										setDiscountCode={setDiscountCode}
+										setShowDiscountComp={setShowDiscountComp}
+										discountCode={discountCode}
+									/>
+								</div>
+							}
+						/>
+					</div>
+				}
+				else={
+					<div className="flex justify-center items-center flex-col gap-14">
+						<div className="w-[500px] flex justify-center items-center">
+							<ConnectWallet />
 						</div>
-					}
-				/>
-			</div>
+					</div>
+				}
+			/>
 		</div>
 	);
 };
