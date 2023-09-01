@@ -21,6 +21,7 @@ const HomeContainer = () => {
 	useEffect(() => {
 		if (contractAddress && provider) {
 			const abi = getContractDetails();
+			console.log(signer);
 			const contract = new ethers.Contract(contractAddress, abi, signer);
 			console.log(contract);
 			setContract(contract);

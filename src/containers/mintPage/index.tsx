@@ -3,7 +3,12 @@ import ConnectWallet from 'src/components/Navbar/ConnectWallet';
 import {useAppSelector} from 'src/redux/hooks';
 import {userSelector} from 'src/redux/user';
 import {useProvider, useSigner} from 'wagmi';
-import {getIsMintAllowListed, getMintType} from './utils';
+import {
+	getIsMintAllowListed,
+	getMerkleHashes,
+	getMintType,
+	hashQueryData,
+} from './utils';
 import {BigNumber, ethers} from 'ethers';
 import {MINTS, SALE_ID} from './constants';
 import toast, {Toaster} from 'react-hot-toast';
@@ -15,13 +20,13 @@ import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
 import {networkSelector} from 'src/redux/network';
 import Buttonbg from 'public/static/images/BUTTON.png';
+import MerkleTree from 'merkletreejs';
 
-const MintPageComp = ({contract}) => {
+const MintPageComp = ({contract, signer}) => {
 	const [saleCategory, setSaleCategory] = useState();
 	const [discounted, setDiscounted] = useState<boolean>();
 	const [allowListed, setAllowListed] = useState<boolean>();
 	const [mintType, setMintType] = useState<number>();
-	const {data: signer} = useSigner();
 	const [price, setPrice] = useState<BigNumber>();
 	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
@@ -109,17 +114,20 @@ const MintPageComp = ({contract}) => {
 					saleId: SALE_ID.PUBLIC,
 					value: BigNumber.from(noOfTokens).mul(price),
 				});
+				console.log(signer);
 				try {
 					const transaction = await contract
 						?.connect(signer)
 						?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
 							value: BigNumber.from(noOfTokens).mul(price),
 						});
-					const event = (await transaction.wait()).events?.filter(
-						event => event.event === 'ApprovalForAll'
-					);
+					const event = (await transaction.wait()).events?.filter(event => {
+						console.log(event.event);
+						console.log(event);
+						console.log(event.event === 'Transfer');
+					});
 					setLoading(false);
-					console.log(event);
+					console.log(transaction);
 				} catch (error) {
 					console.log({error});
 					toast(`❌ Something went wrong! Please Try Again`);
@@ -129,6 +137,30 @@ const MintPageComp = ({contract}) => {
 				console.log('Mint is discounted');
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
+				const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
+				console.log({hashCID});
+				getMerkleHashes(hashCID).then(async hashes => {
+					console.log({hashes});
+					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
+					// console.log({leafs, tree});
+					const leaf = ethers.utils.keccak256(leafs[1]);
+					const proofs = tree.getHexProof(leafs[1]);
+					console.log({proofs});
+					try {
+						const transaction = await contract
+							?.connect(signer)
+							?.mintAllowlisted(user.address, noOfTokens, proofs, 10, {
+								value: BigNumber.from(noOfTokens).mul(price),
+							});
+						console.log(transaction);
+						setLoading(false);
+					} catch (error) {
+						console.log({error});
+						toast(`❌ Something went wrong! Please Try Again`);
+						setLoading(false);
+					}
+				});
 			}
 		} else {
 			console.log('No of tokens is not provided');
@@ -143,6 +175,20 @@ const MintPageComp = ({contract}) => {
 			setNoOfTokens(perTransactionLimit);
 		}
 	}, [noOfTokens]);
+
+	// useEffect(() => {
+	// 	const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
+	// 	console.log({hashCID});
+	// 	getMerkleHashes(hashCID).then(hashes => {
+	// 		console.log({hashes});
+	// 		const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+	// 		const tree = new MerkleTree(leafs, ethers.utils.keccak256);
+	// 		// console.log({leafs, tree});
+	// 		const leaf = ethers.utils.keccak256(leafs[0]);
+	// 		const proofs = tree.getHexProof(leafs[0]);
+	// 		console.log({proofs});
+	// 	});
+	// }, []);
 
 	return (
 		<div className="flex justify-center items-center flex-col">

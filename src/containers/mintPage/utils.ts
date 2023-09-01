@@ -1,4 +1,7 @@
+import { ethers } from "ethers";
 import { MINTS } from "./constants";
+import axios from 'axios'
+
 
 //function definition:
 //if merkle root is empty then the mint is not allowlisted
@@ -10,6 +13,24 @@ export const getIsMintAllowListed = merkleRoot => {
         return true
     }
 };
+
+export const hashQueryData = (query) => {
+    const { emailid, lastname, firstname, eventname, batchid } = query
+    const concatenatedString = `${emailid}-${lastname}-${firstname}-${batchid}-${eventname}`
+    console.log({ concatenatedString })
+  
+    const hash = ethers.utils.keccak256(
+      ethers.utils.toUtf8Bytes(concatenatedString),
+    )
+    return hash
+  }
+
+export const getMerkleHashes = async (cid: string) => {
+    const { data } = await axios.get('https://gateway.pinata.cloud/ipfs/QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z')
+    console.log(data)
+    console.log(Object.values(data))
+    return Object.values(data)
+  }
 
 //funct definition:
 //if allowlisted and discounted both are true then the mint type is mintDiscountAllowListed
