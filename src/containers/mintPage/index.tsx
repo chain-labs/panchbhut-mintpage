@@ -141,6 +141,7 @@ const MintPageComp = ({contract, signer}) => {
 				console.log({hashCID});
 				getMerkleHashes(hashCID).then(async hashes => {
 					console.log({hashes});
+					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
 					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
 					// console.log({leafs, tree});
