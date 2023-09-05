@@ -21,6 +21,7 @@ import MinusImg from 'public/static/images/minus.png';
 import {networkSelector} from 'src/redux/network';
 import Buttonbg from 'public/static/images/BUTTON.png';
 import MerkleTree from 'merkletreejs';
+import {MINT_SALE_ID} from 'src/utils/constants';
 
 const MintPageComp = ({contract, signer}) => {
 	const [saleCategory, setSaleCategory] = useState();
@@ -45,7 +46,9 @@ const MintPageComp = ({contract, signer}) => {
 			console.log(contract);
 			try {
 				console.log(contract);
-				const saleCategory = await contract?.callStatic?.getSaleCategory(1);
+				const saleCategory = await contract?.callStatic?.getSaleCategory(
+					MINT_SALE_ID
+				);
 				setSaleCategory(saleCategory);
 				console.log('sale category', saleCategory);
 			} catch (err) {
@@ -54,7 +57,7 @@ const MintPageComp = ({contract, signer}) => {
 		};
 
 		if (contract && network.isValid) {
-			console.log(contract?.callStatic?.getSaleCategory(1));
+			console.log(contract?.callStatic?.getSaleCategory(MINT_SALE_ID));
 			getSaleCategory();
 		}
 	}, [contract]);
@@ -111,7 +114,7 @@ const MintPageComp = ({contract, signer}) => {
 				console.log('INPUT OF PUBLIC MINT', {
 					address: user.address,
 					Tokens: noOfTokens,
-					saleId: SALE_ID.PUBLIC,
+					saleId: MINT_SALE_ID,
 					value: BigNumber.from(noOfTokens).mul(price),
 				});
 				console.log(signer);
@@ -122,12 +125,17 @@ const MintPageComp = ({contract, signer}) => {
 							value: BigNumber.from(noOfTokens).mul(price),
 						});
 					const event = (await transaction.wait()).events?.filter(event => {
-						console.log(event.event);
-						console.log(event);
-						console.log(event.event === 'Transfer');
+						return event.event === 'Transfer';
 					});
 					setLoading(false);
 					console.log(transaction);
+					console.log(event);
+					if (event) {
+						console.log('Mint Sucessfull');
+						toast(`🎉 Mint Sucessful`);
+					} else {
+						console.log('Mint Unsuccessful');
+					}
 				} catch (error) {
 					console.log({error});
 					toast(`❌ Something went wrong! Please Try Again`);
@@ -144,21 +152,47 @@ const MintPageComp = ({contract, signer}) => {
 					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
 					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
-					// console.log({leafs, tree});
-					const leaf = ethers.utils.keccak256(leafs[1]);
-					const proofs = tree.getHexProof(leafs[1]);
-					console.log({proofs});
-					try {
-						const transaction = await contract
-							?.connect(signer)
-							?.mintAllowlisted(user.address, noOfTokens, proofs, 10, {
-								value: BigNumber.from(noOfTokens).mul(price),
+					if (leafs.includes(user.address)) {
+						console.log('Address is allowlisted');
+						const leaf = ethers.utils.keccak256(user.address);
+						const proofs = tree.getHexProof(user.address);
+						console.log({proofs});
+						try {
+							const transaction = await contract
+								?.connect(signer)
+								?.mintAllowlisted(
+									user.address,
+									noOfTokens,
+									proofs,
+									MINT_SALE_ID,
+									{
+										value: BigNumber.from(noOfTokens).mul(price),
+									}
+								);
+							console.log(transaction);
+							setLoading(false);
+							const event = (await transaction.wait()).events?.filter(event => {
+								return event.event === 'Transfer';
 							});
-						console.log(transaction);
-						setLoading(false);
-					} catch (error) {
-						console.log({error});
-						toast(`❌ Something went wrong! Please Try Again`);
+							setLoading(false);
+							console.log(transaction);
+							console.log(event);
+							if (event) {
+								console.log('Mint Sucessfull');
+								toast(`🎉 Mint Successful`);
+							} else {
+								console.log('Mint Unsuccessful');
+							}
+						} catch (error) {
+							console.log({error});
+							toast(`❌ Something went wrong! Please Try Again`);
+							setLoading(false);
+						}
+					} else {
+						console.log('Address is not allowlisted');
+						toast(
+							`❌ Your address is not allowlisted please try to user other address`
+						);
 						setLoading(false);
 					}
 				});
@@ -193,6 +227,7 @@ const MintPageComp = ({contract, signer}) => {
 
 	return (
 		<div className="flex justify-center items-center flex-col">
+			<Toaster position="top-center" />
 			<If
 				condition={user.exists}
 				then={
