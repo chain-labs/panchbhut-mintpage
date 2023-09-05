@@ -30,7 +30,7 @@ const HomeContainer = () => {
 
 	return (
 		<div className=" min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat ">
-			<div className="flex justify-center items-center flex-col pt-32">
+			<div className="flex justify-center items-center flex-col">
 				<LogoComp />
 				<div className="text-center text-[#ffa800]">
 					{' '}
