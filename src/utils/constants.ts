@@ -18,7 +18,8 @@ export const getNetwork = () => {
 
 export const NETWORK: string = getNetwork()
 
-export const testNetworks = [5, 80001];
+export const MINT_SALE_ID=process.env.NEXT_PUBLIC_SALE_ID
+
 
 
 export const getChain = () => {
