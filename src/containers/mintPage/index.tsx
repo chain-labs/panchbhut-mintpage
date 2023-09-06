@@ -247,7 +247,7 @@ const MintPageComp = ({contract, signer}) => {
 					<div className="flex justify-center items-center flex-col">
 						<LogoComp />
 						<a className="text-[#ffa800] cursor-pointer pb-3">
-							{mintType? `Mint is ${MINT_NAME[mintType].substr(4)}`:''}}
+							{mintType ? `Mint is ${MINT_NAME[mintType].substr(4)}` : ''}
 						</a>
 						<If
 							condition={!showDiscountComp}
