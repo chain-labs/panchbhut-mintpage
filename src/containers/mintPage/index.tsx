@@ -10,7 +10,7 @@ import {
 	hashQueryData,
 } from './utils';
 import {BigNumber, ethers} from 'ethers';
-import {MINTS, SALE_ID} from './constants';
+import {MINTS, MINT_NAME, SALE_ID} from './constants';
 import toast, {Toaster} from 'react-hot-toast';
 import If from 'src/components/If';
 import DiscountCodeComp from './components/DiscountCodeComp';
@@ -152,10 +152,16 @@ const MintPageComp = ({contract, signer}) => {
 					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
 					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
-					if (leafs.includes(user.address)) {
+					if (hashes.includes(user.address)) {
+						console.log(leafs);
 						console.log('Address is allowlisted');
-						const leaf = ethers.utils.keccak256(user.address);
-						const proofs = tree.getHexProof(user.address);
+						console.log(leafs[hashes.indexOf(user.address)]);
+						const leaf = ethers.utils.keccak256(
+							leafs[hashes.indexOf(user.address)]
+						);
+						const proofs = tree.getHexProof(
+							leafs[hashes.indexOf(user.address)]
+						);
 						console.log({proofs});
 						try {
 							const transaction = await contract
@@ -191,7 +197,7 @@ const MintPageComp = ({contract, signer}) => {
 					} else {
 						console.log('Address is not allowlisted');
 						toast(
-							`❌ Your address is not allowlisted please try to user other address`
+							`❌ Your address is not allowlisted please try to use other address`
 						);
 						setLoading(false);
 					}
@@ -240,6 +246,9 @@ const MintPageComp = ({contract, signer}) => {
 					// </div>
 					<div className="flex justify-center items-center flex-col">
 						<LogoComp />
+						<a className="text-[#ffa800] cursor-pointer pb-3">
+							{mintType? `Mint is ${MINT_NAME[mintType].substr(4)}`:''}}
+						</a>
 						<If
 							condition={!showDiscountComp}
 							then={
@@ -312,7 +321,9 @@ const MintPageComp = ({contract, signer}) => {
 											className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 											onClick={mintController}
 										>
-											<div className="mt-3">{loading ? 'MINTING' : 'MINT'}</div>
+											<div className="mt-3">
+												{loading ? 'MINTING...' : 'MINT'}
+											</div>
 										</button>
 									</div>
 								</div>
