@@ -21,15 +21,17 @@ const MintPageComp = ({contract}) => {
 	const [mintType, setMintType] = useState<number>();
 	const {data: signer} = useSigner();
 	const [price, setPrice] = useState<BigNumber>();
-	const [noOfTokens, setNoOfTokens] = useState<number>();
+	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
-	const [discountCode, setDiscountCode] = useState<object>({});
+	const [discountCode, setDiscountCode] = useState<object>();
 	const user = useAppSelector(userSelector);
 	const [supply, setSupply] = useState<number>();
 	const [tokensMinted, setTokensMinted] = useState<number>();
 	const [loading, setLoading] = useState(false);
 	const [perTransactionLimit, setPerTransactionLimit] = useState<number>();
 	const [perWalletLimit, setPerWalletLimit] = useState<number>();
+	const [minted, setMinted] = useState<boolean>(false);
+	const [mintSuccessful, setMintSuccessful] = useState<boolean>();
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
@@ -192,7 +194,7 @@ const MintPageComp = ({contract}) => {
 							<If
 								condition={user.exists}
 								then={
-									<div className="flex flex-col gap-8">
+									<div className="flex flex-col gap-2">
 										<If
 											condition={saleCategory !== undefined}
 											then={
@@ -216,60 +218,88 @@ const MintPageComp = ({contract}) => {
 												</div>
 											}
 										/>
+										<If
+											condition={!minted}
+											then={
+												<div className="flex flex-col items-center">
+													<label className="text-[#ffa800] text-[13px]">
+														MINT QTY
+													</label>
+													<div className="flex justify-center items-center gap-2">
+														<button
+															className="mt-2"
+															onClick={e => setNoOfTokens(noOfTokens - 1)}
+														>
+															<Image
+																src={MinusImg}
+																alt=""
+															/>
+														</button>
+														<input
+															className="input w-20 h-[35px] bg-slate-300 rounded text-center text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+															type="number"
+															onWheel={e => {
+																// @ts-ignore
+																e.target?.blur();
+															}}
+															min={1}
+															max={`${perTransactionLimit}`}
+															value={noOfTokens}
+															onChange={e =>
+																setNoOfTokens(parseInt(e.target?.value))
+															}
+														/>
+														<button
+															className="mt-2"
+															onClick={e => setNoOfTokens(noOfTokens + 1)}
+														>
+															<Image
+																src={PlusImg}
+																alt=""
+															/>
+														</button>
+													</div>
 
-										<div className="flex flex-col items-center">
-											<label className="text-[#ffa800] text-[13px]">
-												MINT QTY
-											</label>
-											<div className="flex justify-center items-center gap-2">
-												<button
-													className="mt-2"
-													onClick={e => setNoOfTokens(noOfTokens - 1)}
-												>
-													<Image
-														src={MinusImg}
-														alt=""
-													/>
-												</button>
-												<input
-													className="input w-20 h-[35px] bg-slate-300 rounded text-center text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-													type="number"
-													onWheel={e => {
-														// @ts-ignore
-														e.target?.blur();
-													}}
-													min={1}
-													max={`${perTransactionLimit}`}
-													value={noOfTokens}
-													onChange={e =>
-														setNoOfTokens(parseInt(e.target?.value))
-													}
-												/>
-												<button
-													className="mt-2"
-													onClick={e => setNoOfTokens(noOfTokens + 1)}
-												>
-													<Image
-														src={PlusImg}
-														alt=""
-													/>
-												</button>
-											</div>
-											<a
-												className="text-[#5fca00] text-[10px] cursor-pointer"
-												onClick={e => setShowDiscountComp(true)}
-											>
-												APPLY COUPON CODE
-											</a>
-											<button
-												className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
-												onClick={mintController}
-											>
-												<div className="mt-3 font-bold">
-													{loading ? 'MINTING' : 'MINT'}
+													<a
+														className="text-[#5fca00] text-[10px] cursor-pointer"
+														onClick={e => setShowDiscountComp(true)}
+													>
+														{discountCode !== undefined
+															? 'APPLIED DISCOUNT CODE'
+															: 'APPLY COUPON CODE'}
+													</a>
+													<button
+														className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
+														onClick={mintController}
+													>
+														<div className="mt-3 font-bold">
+															{loading ? 'MINTING' : 'MINT'}
+														</div>
+													</button>
 												</div>
-											</button>
-										</div>
+											}
+											else={
+												<div className="flex flex-col items-center">
+													<If
+														condition={mintSuccessful}
+														then={
+															<div className="bg-success-lg w-[231px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4">
+																<div className="mt-5 font-bold">
+																	MINT COMPLETE
+																</div>
+															</div>
+														}
+														else={
+															<div className="bg-error-lg w-[218px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4">
+																<div className="mt-5 font-bold">
+																	MINT FAILED
+																</div>
+															</div>
+														}
+													/>
+												</div>
+											}
+										/>
 									</div>
 								}
 								else={<ConnectWallet />}
