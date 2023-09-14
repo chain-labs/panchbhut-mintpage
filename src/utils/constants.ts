@@ -18,6 +18,9 @@ export const getNetwork = () => {
 
 export const NETWORK: string = getNetwork()
 
+export const testNetworks = [5, 80001];
+
+
 export const getChain = () => {
   switch (NETWORK) {
     case 'goerli':
@@ -34,7 +37,7 @@ export const getEtherscanUrl = () => {
     case '5':
       return `https://goerli.etherscan.io/address/${CONTRACT_ADDRESS}`
     case '1':
-      return `https://polygonscan.com/address/${CONTRACT_ADDRESS}`
+      return `https://etherscan.io/address/${CONTRACT_ADDRESS}`
   }
 }
 
