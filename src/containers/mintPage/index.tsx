@@ -25,7 +25,7 @@ const MintPageComp = ({contract}) => {
 	const [price, setPrice] = useState<BigNumber>();
 	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
-	const [discountCode, setDiscountCode] = useState<object>();
+	const [discountCode, setDiscountCode] = useState();
 	const user = useAppSelector(userSelector);
 	const [supply, setSupply] = useState<number>();
 	const [tokensMinted, setTokensMinted] = useState<number>();
@@ -36,13 +36,14 @@ const MintPageComp = ({contract}) => {
 	const [mintSuccessful, setMintSuccessful] = useState<boolean>();
 	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
+	const [isDiscountCodeValid, setIsDiscountCodeValid] = useState(false);
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
 			console.log(contract);
 			try {
 				console.log(contract);
-				const saleCategory = await contract?.callStatic?.getSaleCategory(1);
+				const saleCategory = await contract?.callStatic?.getSaleCategory(5);
 				setSaleCategory(saleCategory);
 				console.log('sale category', saleCategory);
 			} catch (err) {
@@ -96,6 +97,16 @@ const MintPageComp = ({contract}) => {
 		getCurrentMintType();
 	}, [discounted, allowListed]);
 
+	useEffect(() => {
+		if (discountCode) {
+			if (discountCode.receiverAddress !== user.address) {
+				toast('❌ This code is not applicable to your address');
+			} else {
+				setIsDiscountCodeValid(true);
+			}
+		}
+	}, [discountCode]);
+
 	//Below function checks the mint type and according to the minttype it calls the required function
 	const mintController = async () => {
 		setLoading(true);
@@ -132,36 +143,42 @@ const MintPageComp = ({contract}) => {
 			} else if (mintType === MINTS.DISCOUNTED) {
 				// if (discountCode) {
 				console.log('Mint is discounted');
-				const discount_code = {
-					discountIndex: 0,
-					discountedPrice: BigNumber.from('0x09184e72a000'),
-					discountSignature:
-						'0xc6d336b0b783848226c3e9813efbc000e51caf232415de13fe4d7c7ea5310018262ef7b0a0a51cc33cf6af9c1e38e683a8e62c636cfdd454cd1561a60bce475b1b',
-				};
+
 				// console.log(discountCode?.discountedPrice.toHex)
 				try {
-					console.log(discount_code);
-					const transaction = await contract
-						?.connect(signer)
-						?.mintDiscounted(
-							user.address,
-							noOfTokens,
-							parseInt(SALE_ID.DISCOUNTED),
-							discount_code?.discountIndex,
-							discount_code?.discountedPrice,
-							discount_code?.discountSignature,
-							{
-								value: BigNumber.from(noOfTokens).mul(
-									discount_code.discountedPrice
-								),
-							}
+					console.log(discountCode);
+					console.log('INPUT PARAMS:', {
+						address: user.address,
+						Tokens: noOfTokens,
+						saleId: 2,
+						index: discountCode?.discountIndex,
+						price: discountCode?.discountedPrice,
+						signature: discountCode?.discountSignature,
+						value: BigNumber.from(noOfTokens).mul(discountCode.discountedPrice),
+					});
+					if (discountCode) {
+						const transaction = await contract
+							?.connect(signer)
+							?.mintDiscounted(
+								user.address,
+								noOfTokens,
+								2,
+								discountCode.discountIndex,
+								discountCode.discountedPrice,
+								discountCode.discountSignature,
+								{
+									value: BigNumber.from(noOfTokens).mul(
+										discountCode.discountedPrice
+									),
+								}
+							);
+						console.log('Transaction:', transaction);
+						const event = (await transaction.wait()).events?.filter(
+							event => event.event === 'ApprovalForAll'
 						);
-					console.log('Transaction:', transaction);
-					const event = (await transaction.wait()).events?.filter(
-						event => event.event === 'ApprovalForAll'
-					);
-					setLoading(false);
-					// console.log(event);
+						setLoading(false);
+						// console.log(event);
+					}
 				} catch (error) {
 					console.log({error});
 					toast(`❌ Something went wrong! Please Try Again`);
@@ -187,6 +204,7 @@ const MintPageComp = ({contract}) => {
 
 	return (
 		<div className="flex justify-center items-center flex-col">
+			<Toaster position="top-center" />
 			<If
 				condition={user.exists}
 				then={
@@ -261,12 +279,20 @@ const MintPageComp = ({contract}) => {
 												/>
 											</button>
 										</div>
-										<a
-											className="text-[#5fca00] cursor-pointer"
-											onClick={e => setShowDiscountComp(true)}
-										>
-											APPLY COUPON CODE
-										</a>
+										<If
+											condition={mintType === 2}
+											then={
+												<a
+													className="text-[#5fca00] cursor-pointer"
+													onClick={e => setShowDiscountComp(true)}
+												>
+													{isDiscountCodeValid
+														? 'APPLIED'
+														: 'APPLY COUPON CODE'}
+												</a>
+											}
+										/>
+
 										<button
 											className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 											onClick={mintController}

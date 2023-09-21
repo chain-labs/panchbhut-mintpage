@@ -22,13 +22,18 @@ const DiscountCodeComp = ({
 
 	const getCollection = async () => {
 		if (inputCode !== '') {
-			let codes = await db.collection('discountCodes').doc(inputCode).get();
+			let codes = await db
+				.collection('discountCodes')
+				.doc(inputCode.toUpperCase())
+				.get();
 			// codes.forEach(doc => {
 			// 	const data = doc.data();
 			// 	console.log(data);
 			// });
+			console.log(codes.data());
 			if (codes.data() == null) {
 				console.log('codes are wrong');
+				toast('Code is Invalid');
 				return null;
 			} else {
 				console.log(codes.data());
