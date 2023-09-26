@@ -26,7 +26,7 @@ export const hashQueryData = (query) => {
   }
 
 export const getMerkleHashes = async (cid: string) => {
-    const { data } = await axios.get('https://gateway.pinata.cloud/ipfs/QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z')
+    const { data } = await axios.get('https://gateway.pinata.cloud/ipfs/QmTQ8nEbEsQGb8uXb7cp5XF1meXhgWgXRDFNoNBYncZVjR')
     console.log(data)
     console.log(Object.values(data))
     return Object.values(data)
