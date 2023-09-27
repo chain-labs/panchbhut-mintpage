@@ -107,7 +107,8 @@ const MintPageComp = ({contract, signer}) => {
 
 	useEffect(() => {
 		if (discountCode) {
-			if (discountCode.receiverAddress !== user.address) {
+			//@ts-ignore
+			if (discountCode?.receiverAddress !== user.address) {
 				toast('❌ This code is not applicable to your address');
 			} else {
 				setIsDiscountCodeValid(true);
@@ -162,17 +163,18 @@ const MintPageComp = ({contract, signer}) => {
 					// console.log(discountCode?.discountedPrice.toHex)
 					try {
 						console.log(discountCode);
-						console.log('INPUT PARAMS:', {
-							address: user.address,
-							Tokens: noOfTokens,
-							saleId: 2,
-							index: discountCode?.discountIndex,
-							price: discountCode?.discountedPrice,
-							signature: discountCode?.discountSignature,
-							value: BigNumber.from(noOfTokens).mul(
-								discountCode.discountedPrice
-							),
-						});
+
+						// console.log('INPUT PARAMS:', {
+						// 	address: user.address,
+						// 	Tokens: noOfTokens,
+						// 	saleId: 2,
+						// 	index: discountCode?.discountIndex,
+						// 	price: discountCode?.discountedPrice,
+						// 	signature: discountCode?.discountSignature,
+						// 	value: BigNumber.from(noOfTokens).mul(
+						// 		discountCode.discountedPrice
+						// 	),
+						// });
 						if (discountCode) {
 							const transaction = await contract
 								?.connect(signer)
@@ -180,11 +182,15 @@ const MintPageComp = ({contract, signer}) => {
 									user.address,
 									noOfTokens,
 									2,
+									//@ts-ignore
 									discountCode.discountIndex,
+									//@ts-ignore
 									discountCode.discountedPrice,
+									//@ts-ignore
 									discountCode.discountSignature,
 									{
 										value: BigNumber.from(noOfTokens).mul(
+											//@ts-ignore
 											discountCode.discountedPrice
 										),
 									}
