@@ -43,7 +43,10 @@ const MintPage = () => {
 				condition={network.isValid && contractExists}
 				then={
 					<div>
-						<MintPageComp contract={contract} />
+						<MintPageComp
+							contract={contract}
+							signer={signer}
+						/>
 					</div>
 				}
 				else={
