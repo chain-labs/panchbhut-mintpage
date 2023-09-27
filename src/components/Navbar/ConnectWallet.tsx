@@ -1,9 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {ConnectButton} from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import {useSwitchNetwork} from 'wagmi';
+import {useSigner, useSwitchNetwork} from 'wagmi';
 import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {removeUser, setProvider, setUser, userSelector} from '../../redux/user';
+import {
+	removeUser,
+	setProvider,
+	setSigner,
+	setUser,
+	userSelector,
+} from '../../redux/user';
 import {networkSelector, setNetwork} from 'src/redux/network';
 import {TEST_ENV, getChain, getNetwork} from 'src/utils/constants';
 import {networks} from 'src/redux/user/types';
@@ -14,6 +20,7 @@ const ConnectWallet = () => {
 	const network = useAppSelector(networkSelector);
 	const {switchNetwork} = useSwitchNetwork();
 	const correctChain = getChain();
+	const {data: Signer} = useSigner();
 	const [wrongNetwork, setWrongNetwork] = useState(false);
 
 	const changeNetwork = () => {
@@ -44,6 +51,11 @@ const ConnectWallet = () => {
 						});
 					}
 				}, []);
+
+				useEffect(() => {
+					console.log(typeof Signer);
+					// dispatch(setSigner(Signer));
+				}, [Signer]);
 
 				useEffect(() => {
 					if (user.signer) {

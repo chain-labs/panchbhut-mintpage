@@ -3,9 +3,14 @@ import ConnectWallet from 'src/components/Navbar/ConnectWallet';
 import {useAppSelector} from 'src/redux/hooks';
 import {userSelector} from 'src/redux/user';
 import {useProvider, useSigner} from 'wagmi';
-import {getIsMintAllowListed, getMintType} from './utils';
+import {
+	getIsMintAllowListed,
+	getMerkleHashes,
+	getMintType,
+	hashQueryData,
+} from './utils';
 import {BigNumber, ethers} from 'ethers';
-import {MINTS, SALE_ID} from './constants';
+import {MINTS, MINT_NAME, SALE_ID} from './constants';
 import toast, {Toaster} from 'react-hot-toast';
 import If from 'src/components/If';
 import DiscountCodeComp from './components/DiscountCodeComp';
@@ -15,13 +20,14 @@ import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
 import {networkSelector} from 'src/redux/network';
 import Buttonbg from 'public/static/images/BUTTON.png';
+import MerkleTree from 'merkletreejs';
+import {MINT_SALE_ID} from 'src/utils/constants';
 
-const MintPageComp = ({contract}) => {
+const MintPageComp = ({contract, signer}) => {
 	const [saleCategory, setSaleCategory] = useState();
 	const [discounted, setDiscounted] = useState<boolean>();
 	const [allowListed, setAllowListed] = useState<boolean>();
 	const [mintType, setMintType] = useState<number>();
-	const {data: signer} = useSigner();
 	const [price, setPrice] = useState<BigNumber>();
 	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
@@ -40,7 +46,9 @@ const MintPageComp = ({contract}) => {
 			console.log(contract);
 			try {
 				console.log(contract);
-				const saleCategory = await contract?.callStatic?.getSaleCategory(1);
+				const saleCategory = await contract?.callStatic?.getSaleCategory(
+					MINT_SALE_ID
+				);
 				setSaleCategory(saleCategory);
 				console.log('sale category', saleCategory);
 			} catch (err) {
@@ -49,7 +57,7 @@ const MintPageComp = ({contract}) => {
 		};
 
 		if (contract && network.isValid) {
-			console.log(contract?.callStatic?.getSaleCategory(1));
+			console.log(contract?.callStatic?.getSaleCategory(MINT_SALE_ID));
 			getSaleCategory();
 		}
 	}, [contract]);
@@ -106,20 +114,28 @@ const MintPageComp = ({contract}) => {
 				console.log('INPUT OF PUBLIC MINT', {
 					address: user.address,
 					Tokens: noOfTokens,
-					saleId: SALE_ID.PUBLIC,
+					saleId: MINT_SALE_ID,
 					value: BigNumber.from(noOfTokens).mul(price),
 				});
+				console.log(signer);
 				try {
 					const transaction = await contract
 						?.connect(signer)
 						?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
 							value: BigNumber.from(noOfTokens).mul(price),
 						});
-					const event = (await transaction.wait()).events?.filter(
-						event => event.event === 'ApprovalForAll'
-					);
+					const event = (await transaction.wait()).events?.filter(event => {
+						return event.event === 'Transfer';
+					});
 					setLoading(false);
+					console.log(transaction);
 					console.log(event);
+					if (event) {
+						console.log('Mint Sucessfull');
+						toast(`🎉 Mint Sucessful`);
+					} else {
+						console.log('Mint Unsuccessful');
+					}
 				} catch (error) {
 					console.log({error});
 					toast(`❌ Something went wrong! Please Try Again`);
@@ -129,6 +145,63 @@ const MintPageComp = ({contract}) => {
 				console.log('Mint is discounted');
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
+				const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
+				console.log({hashCID});
+				getMerkleHashes(hashCID).then(async hashes => {
+					console.log({hashes});
+					//@ts-expect-error
+					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
+					if (hashes.includes(user.address)) {
+						console.log(leafs);
+						console.log('Address is allowlisted');
+						console.log(leafs[hashes.indexOf(user.address)]);
+						const leaf = ethers.utils.keccak256(
+							leafs[hashes.indexOf(user.address)]
+						);
+						const proofs = tree.getHexProof(
+							leafs[hashes.indexOf(user.address)]
+						);
+						console.log({proofs});
+						try {
+							const transaction = await contract
+								?.connect(signer)
+								?.mintAllowlisted(
+									user.address,
+									noOfTokens,
+									proofs,
+									MINT_SALE_ID,
+									{
+										value: BigNumber.from(noOfTokens).mul(price),
+									}
+								);
+							console.log(transaction);
+							setLoading(false);
+							const event = (await transaction.wait()).events?.filter(event => {
+								return event.event === 'Transfer';
+							});
+							setLoading(false);
+							console.log(transaction);
+							console.log(event);
+							if (event) {
+								console.log('Mint Sucessfull');
+								toast(`🎉 Mint Successful`);
+							} else {
+								console.log('Mint Unsuccessful');
+							}
+						} catch (error) {
+							console.log({error});
+							toast(`❌ Something went wrong! Please Try Again`);
+							setLoading(false);
+						}
+					} else {
+						console.log('Address is not allowlisted');
+						toast(
+							`❌ Your address is not allowlisted please try to use other address`
+						);
+						setLoading(false);
+					}
+				});
 			}
 		} else {
 			console.log('No of tokens is not provided');
@@ -144,8 +217,23 @@ const MintPageComp = ({contract}) => {
 		}
 	}, [noOfTokens]);
 
+	// useEffect(() => {
+	// 	const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
+	// 	console.log({hashCID});
+	// 	getMerkleHashes(hashCID).then(hashes => {
+	// 		console.log({hashes});
+	// 		const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+	// 		const tree = new MerkleTree(leafs, ethers.utils.keccak256);
+	// 		// console.log({leafs, tree});
+	// 		const leaf = ethers.utils.keccak256(leafs[0]);
+	// 		const proofs = tree.getHexProof(leafs[0]);
+	// 		console.log({proofs});
+	// 	});
+	// }, []);
+
 	return (
 		<div className="flex justify-center items-center flex-col">
+			<Toaster position="top-center" />
 			<If
 				condition={user.exists}
 				then={
@@ -158,6 +246,9 @@ const MintPageComp = ({contract}) => {
 					// </div>
 					<div className="flex justify-center items-center flex-col">
 						<LogoComp />
+						<a className="text-[#ffa800] cursor-pointer pb-3">
+							{mintType ? `Mint is ${MINT_NAME[mintType].substr(4)}` : ''}
+						</a>
 						<If
 							condition={!showDiscountComp}
 							then={
@@ -230,7 +321,9 @@ const MintPageComp = ({contract}) => {
 											className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 											onClick={mintController}
 										>
-											<div className="mt-3">{loading ? 'MINTING' : 'MINT'}</div>
+											<div className="mt-3">
+												{loading ? 'MINTING...' : 'MINT'}
+											</div>
 										</button>
 									</div>
 								</div>
