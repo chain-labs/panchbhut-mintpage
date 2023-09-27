@@ -2,6 +2,7 @@ import Image from 'next/image';
 import React, {useState} from 'react';
 import CloseButton from 'public/static/images/close_button.png';
 import {db} from 'src/firebase';
+import toast from 'react-hot-toast';
 
 interface Props {
 	setDiscountCode: (any) => void;
@@ -33,7 +34,8 @@ const DiscountCodeComp = ({
 			console.log(codes.data());
 			if (codes.data() == null) {
 				console.log('codes are wrong');
-				toast('Code is Invalid');
+				toast('❌ Code is Invalid');
+				setInputCode('');
 				return null;
 			} else {
 				console.log(codes.data());

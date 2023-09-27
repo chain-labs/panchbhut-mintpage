@@ -156,46 +156,53 @@ const MintPageComp = ({contract, signer}) => {
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
 				// if (discountCode) {
-				console.log('Mint is discounted');
+				if (discountCode) {
+					console.log('Mint is discounted');
 
-				// console.log(discountCode?.discountedPrice.toHex)
-				try {
-					console.log(discountCode);
-					console.log('INPUT PARAMS:', {
-						address: user.address,
-						Tokens: noOfTokens,
-						saleId: 2,
-						index: discountCode?.discountIndex,
-						price: discountCode?.discountedPrice,
-						signature: discountCode?.discountSignature,
-						value: BigNumber.from(noOfTokens).mul(discountCode.discountedPrice),
-					});
-					if (discountCode) {
-						const transaction = await contract
-							?.connect(signer)
-							?.mintDiscounted(
-								user.address,
-								noOfTokens,
-								2,
-								discountCode.discountIndex,
-								discountCode.discountedPrice,
-								discountCode.discountSignature,
-								{
-									value: BigNumber.from(noOfTokens).mul(
-										discountCode.discountedPrice
-									),
-								}
+					// console.log(discountCode?.discountedPrice.toHex)
+					try {
+						console.log(discountCode);
+						console.log('INPUT PARAMS:', {
+							address: user.address,
+							Tokens: noOfTokens,
+							saleId: 2,
+							index: discountCode?.discountIndex,
+							price: discountCode?.discountedPrice,
+							signature: discountCode?.discountSignature,
+							value: BigNumber.from(noOfTokens).mul(
+								discountCode.discountedPrice
+							),
+						});
+						if (discountCode) {
+							const transaction = await contract
+								?.connect(signer)
+								?.mintDiscounted(
+									user.address,
+									noOfTokens,
+									2,
+									discountCode.discountIndex,
+									discountCode.discountedPrice,
+									discountCode.discountSignature,
+									{
+										value: BigNumber.from(noOfTokens).mul(
+											discountCode.discountedPrice
+										),
+									}
+								);
+							console.log('Transaction:', transaction);
+							const event = (await transaction.wait()).events?.filter(
+								event => event.event === 'ApprovalForAll'
 							);
-						console.log('Transaction:', transaction);
-						const event = (await transaction.wait()).events?.filter(
-							event => event.event === 'ApprovalForAll'
-						);
+							setLoading(false);
+							// console.log(event);
+						}
+					} catch (error) {
+						console.log({error});
+						toast(`❌ Something went wrong! Please Try Again`);
 						setLoading(false);
-						// console.log(event);
 					}
-				} catch (error) {
-					console.log({error});
-					toast(`❌ Something went wrong! Please Try Again`);
+				} else {
+					toast(`❌ Please Apply discount code`);
 					setLoading(false);
 				}
 				// }
