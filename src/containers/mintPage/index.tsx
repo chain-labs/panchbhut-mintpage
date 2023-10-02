@@ -381,7 +381,7 @@ const MintPageComp = ({contract, signer}) => {
 											</button>
 										</div>
 										<If
-											condition={mintType === 2}
+											condition={mintType === 2 || mintType === 1}
 											then={
 												<a
 													className="text-[#5fca00] cursor-pointer"
