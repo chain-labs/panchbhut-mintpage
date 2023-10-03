@@ -49,3 +49,5 @@ export const getMintType = async (allowListed,discounted) => {
         return MINTS.PUBLIC;
     }
 };
+
+export const getProofs = async()=>{}
