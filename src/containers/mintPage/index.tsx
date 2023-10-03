@@ -181,7 +181,7 @@ const MintPageComp = ({contract, signer}) => {
 								?.mintDiscounted(
 									user.address,
 									noOfTokens,
-									2,
+									MINT_SALE_ID,
 									//@ts-ignore
 									discountCode.discountIndex,
 									//@ts-ignore
