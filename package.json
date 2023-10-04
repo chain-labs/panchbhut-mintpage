@@ -35,7 +35,8 @@
 		"styled-components": "^5.3.6",
 		"styled-system": "^5.1.5",
 		"urql": "^3.0.4",
-		"wagmi": "^0.6.6"
+		"wagmi": "0.6.4",
+		"firebase": "^8.3.2"
 	},
 	"devDependencies": {
 		"@styled-system/prop-types": "^5.1.5",
