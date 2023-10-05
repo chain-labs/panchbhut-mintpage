@@ -128,64 +128,64 @@ const MintPageComp = ({contract, signer}) => {
 					console.log({hashes});
 					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
-					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
-
-					if (hashes.includes(user.address) && discountCode) {
-						console.log(leafs);
-						console.log('Address is allowlisted');
-						console.log(leafs[hashes.indexOf(user.address)]);
-						const leaf = ethers.utils.keccak256(
-							leafs[hashes.indexOf(user.address)]
-						);
-						const proofs = tree.getHexProof(
-							leafs[hashes.indexOf(user.address)]
-						);
-						console.log({proofs});
-						try {
-							const transaction = await contract
-								?.connect(signer)
-								?.mintAllowlisted(
-									user.address,
-									noOfTokens,
-									proofs,
-									MINT_SALE_ID,
-									//@ts-ignore
-									discountCode.discountIndex,
-									//@ts-ignore
-									discountCode.discountedPrice,
-									//@ts-ignore
-									discountCode.discountSignature,
-									{
-										value: BigNumber.from(noOfTokens).mul(
-											//@ts-ignore
-											discountCode.discountedPrice
-										),
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+						sortPairs: true,
+					});
+					if (discountCode) {
+						if (hashes.includes(user.address) && discountCode) {
+							const leaf = leafs[hashes.indexOf(user.address)];
+							const proofs = tree.getHexProof(leaf);
+							try {
+								const transaction = await contract
+									?.connect(signer)
+									?.mintDiscountedAllowlist(
+										user.address,
+										noOfTokens,
+										proofs,
+										MINT_SALE_ID,
+										//@ts-ignore
+										discountCode.discountIndex,
+										//@ts-ignore
+										discountCode.discountedPrice,
+										//@ts-ignore
+										discountCode.discountSignature,
+										{
+											value: BigNumber.from(noOfTokens).mul(
+												//@ts-ignore
+												discountCode.discountedPrice
+											),
+										}
+									);
+								console.log(transaction);
+								setLoading(false);
+								const event = (await transaction.wait()).events?.filter(
+									event => {
+										return event.event === 'Transfer';
 									}
 								);
-							console.log(transaction);
-							setLoading(false);
-							const event = (await transaction.wait()).events?.filter(event => {
-								return event.event === 'Transfer';
-							});
-							setLoading(false);
-							console.log(transaction);
-							console.log(event);
-							if (event) {
-								console.log('Mint Sucessfull');
-								toast(`🎉 Mint Successful`);
-							} else {
-								console.log('Mint Unsuccessful');
+								setLoading(false);
+								console.log(transaction);
+								console.log(event);
+								if (event) {
+									console.log('Mint Sucessfull');
+									toast(`🎉 Mint Successful`);
+								} else {
+									console.log('Mint Unsuccessful');
+								}
+							} catch (error) {
+								console.log({error});
+								toast(`❌ Something went wrong! Please Try Again`);
+								setLoading(false);
 							}
-						} catch (error) {
-							console.log({error});
-							toast(`❌ Something went wrong! Please Try Again`);
+						} else {
+							console.log('Address is not allowlisted');
+							toast(
+								`❌ Your address is not allowlisted please try to use other address`
+							);
 							setLoading(false);
 						}
 					} else {
-						console.log('Address is not allowlisted');
-						toast(
-							`❌ Your address is not allowlisted please try to use other address`
-						);
+						toast(`❌ Please Apply discount code`);
 						setLoading(false);
 					}
 				});
