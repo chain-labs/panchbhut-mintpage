@@ -190,7 +190,6 @@ const MintPageComp = ({contract, signer}) => {
 											return event.event === 'Transfer';
 										}
 									);
-									setLoading(false);
 									console.log(transaction);
 									console.log(event);
 									if (event) {
@@ -220,19 +219,33 @@ const MintPageComp = ({contract, signer}) => {
 				});
 			} else if (mintType === MINTS.PUBLIC) {
 				try {
-					const transaction = await contract
-						?.connect(signer)
-						?.mintPublic(user.address, noOfTokens, parseInt(SALE_ID.PUBLIC), {
+					const estimateGas = await contract.estimateGas.mintPublic(
+						user.address,
+						noOfTokens,
+						MINT_SALE_ID,
+						{
 							value: BigNumber.from(noOfTokens).mul(price),
+						}
+					);
+					if (estimateGas) {
+						const transaction = await contract
+							?.connect(signer)
+							?.mintPublic(user.address, noOfTokens, MINT_SALE_ID, {
+								value: BigNumber.from(noOfTokens).mul(price),
+							});
+						const event = (await transaction.wait()).events?.filter(event => {
+							return event.event === 'Transfer';
 						});
-					const event = (await transaction.wait()).events?.filter(event => {
-						return event.event === 'Transfer';
-					});
-					setLoading(false);
-					if (event) {
-						toast(SUCCESS_MESSAGE);
+						if (event) {
+							toast(SUCCESS_MESSAGE);
+							setLoading(false);
+						} else {
+							toast(ERROR_MESSAGE);
+							setLoading(false);
+						}
 					} else {
 						toast(ERROR_MESSAGE);
+						setLoading(false);
 					}
 				} catch (error) {
 					console.log({error});
@@ -284,10 +297,16 @@ const MintPageComp = ({contract, signer}) => {
 									);
 								console.log('Transaction:', transaction);
 								const event = (await transaction.wait()).events?.filter(
-									event => event.event === 'ApprovalForAll'
+									event => {
+										return event.event === 'Transfer';
+									}
 								);
-								toast(SUCCESS_MESSAGE);
-								setLoading(false);
+								if (event) {
+									toast(SUCCESS_MESSAGE);
+									setLoading(false);
+								} else {
+									toast(ERROR_MESSAGE);
+								}
 							} else {
 								toast(ERROR_MESSAGE);
 								setLoading(false);
@@ -338,14 +357,13 @@ const MintPageComp = ({contract, signer}) => {
 										}
 									);
 								console.log(transaction);
-								setLoading(false);
 								const event = (await transaction.wait()).events?.filter(
 									event => {
 										return event.event === 'Transfer';
 									}
 								);
-								setLoading(false);
 								if (event) {
+									setLoading(false);
 									toast(SUCCESS_MESSAGE);
 								} else {
 									toast(ERROR_MESSAGE);
@@ -467,8 +485,10 @@ const MintPageComp = ({contract, signer}) => {
 										/>
 
 										<button
-											className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
-											onClick={mintController}
+											className={`bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4 ${
+												loading ? 'cursor-not-allowed' : 'cursor-pointer'
+											}`}
+											onClick={loading ? e => {} : mintController}
 										>
 											<div className="mt-3">
 												{loading ? 'MINTING...' : 'MINT'}
