@@ -13,7 +13,6 @@ import {BigNumber, ethers} from 'ethers';
 import {
 	ALLOWLIST_ERROR,
 	DISCOUNTED_ERROR,
-	ERROR,
 	ERROR_MESSAGE,
 	MINTS,
 	MINT_NAME,
@@ -138,13 +137,12 @@ const MintPageComp = ({contract, signer}) => {
 						sortPairs: true,
 					});
 					if (discountCode) {
-						if (hashes.includes(user.address) && discountCode) {
+						if (hashes.includes(user.address)) {
 							const leaf = leafs[hashes.indexOf(user.address)];
 							const proofs = tree.getHexProof(leaf);
 							try {
-								const transaction = await contract
-									?.connect(signer)
-									?.mintDiscountedAllowlist(
+								const estimateGas =
+									await contract.estimateGas.mintDiscountedAllowlist(
 										user.address,
 										noOfTokens,
 										proofs,
@@ -162,36 +160,61 @@ const MintPageComp = ({contract, signer}) => {
 											),
 										}
 									);
-								console.log(transaction);
-								setLoading(false);
-								const event = (await transaction.wait()).events?.filter(
-									event => {
-										return event.event === 'Transfer';
+
+								if (estimateGas) {
+									console.log('Gas Estimation successfull');
+									const transaction = await contract
+										?.connect(signer)
+										?.mintDiscountedAllowlist(
+											user.address,
+											noOfTokens,
+											proofs,
+											MINT_SALE_ID,
+											//@ts-ignore
+											discountCode.discountIndex,
+											//@ts-ignore
+											discountCode.discountedPrice,
+											//@ts-ignore
+											discountCode.discountSignature,
+											{
+												value: BigNumber.from(noOfTokens).mul(
+													//@ts-ignore
+													discountCode.discountedPrice
+												),
+											}
+										);
+									console.log(transaction);
+									setLoading(false);
+									const event = (await transaction.wait()).events?.filter(
+										event => {
+											return event.event === 'Transfer';
+										}
+									);
+									setLoading(false);
+									console.log(transaction);
+									console.log(event);
+									if (event) {
+										console.log('Mint Sucessfull');
+										toast(SUCCESS_MESSAGE);
+									} else {
+										console.log('Mint Unsuccessful');
 									}
-								);
-								setLoading(false);
-								console.log(transaction);
-								console.log(event);
-								if (event) {
-									console.log('Mint Sucessfull');
-									toast(`🎉 Mint Successful`);
 								} else {
-									console.log('Mint Unsuccessful');
+									console.log('Gas Estimation Unsuccessfull');
+									toast(ERROR_MESSAGE);
 								}
 							} catch (error) {
 								console.log({error});
-								toast(`❌ Something went wrong! Please Try Again`);
+								toast(ERROR_MESSAGE);
 								setLoading(false);
 							}
 						} else {
 							console.log('Address is not allowlisted');
-							toast(
-								`❌ Your address is not allowlisted please try to use other address`
-							);
+							toast(ALLOWLIST_ERROR);
 							setLoading(false);
 						}
 					} else {
-						toast(`❌ Please Apply discount code`);
+						toast(DISCOUNTED_ERROR);
 						setLoading(false);
 					}
 				});
@@ -209,11 +232,11 @@ const MintPageComp = ({contract, signer}) => {
 					if (event) {
 						toast(SUCCESS_MESSAGE);
 					} else {
-						toast(ERROR);
+						toast(ERROR_MESSAGE);
 					}
 				} catch (error) {
 					console.log({error});
-					toast(ERROR);
+					toast(ERROR_MESSAGE);
 					setLoading(false);
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
@@ -281,9 +304,6 @@ const MintPageComp = ({contract, signer}) => {
 				}
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
-				const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
-				console.log({hashCID});
-
 				getMerkleHashes().then(async hashes => {
 					console.log({hashes});
 					//@ts-expect-error
@@ -293,12 +313,8 @@ const MintPageComp = ({contract, signer}) => {
 					});
 					console.log(tree.toString());
 					if (hashes.includes(user.address)) {
-						console.log(leafs);
-						console.log('Address is allowlisted');
-						console.log(leafs[hashes.indexOf(user.address)]);
 						const leaf = leafs[hashes.indexOf(user.address)];
 						const proofs = tree.getHexProof(leaf);
-						console.log({proofs});
 						try {
 							const estimateGas = await contract.estimateGas.mintAllowlisted(
 								user.address,
@@ -350,6 +366,7 @@ const MintPageComp = ({contract, signer}) => {
 			}
 		} else {
 			console.log('No of tokens is not provided');
+			toast('❌ Please give a valid input');
 		}
 	};
 
