@@ -51,6 +51,7 @@ const MintPageComp = ({contract, signer}) => {
 	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
 	const [isDiscountCodeValid, setIsDiscountCodeValid] = useState(false);
+	const [hash, setHash] = useState([]);
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
@@ -129,6 +130,71 @@ const MintPageComp = ({contract, signer}) => {
 			console.log(mintType);
 			if (mintType === MINTS.DISCOUNTED_ALLOWLISTED) {
 				console.log('Mint is discounted allowlisted');
+				getMerkleHashes().then(async hashes => {
+					console.log({hashes});
+					//@ts-expect-error
+					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+						sortPairs: true,
+					});
+					if (discountCode) {
+						if (hashes.includes(user.address) && discountCode) {
+							const leaf = leafs[hashes.indexOf(user.address)];
+							const proofs = tree.getHexProof(leaf);
+							try {
+								const transaction = await contract
+									?.connect(signer)
+									?.mintDiscountedAllowlist(
+										user.address,
+										noOfTokens,
+										proofs,
+										MINT_SALE_ID,
+										//@ts-ignore
+										discountCode.discountIndex,
+										//@ts-ignore
+										discountCode.discountedPrice,
+										//@ts-ignore
+										discountCode.discountSignature,
+										{
+											value: BigNumber.from(noOfTokens).mul(
+												//@ts-ignore
+												discountCode.discountedPrice
+											),
+										}
+									);
+								console.log(transaction);
+								setLoading(false);
+								const event = (await transaction.wait()).events?.filter(
+									event => {
+										return event.event === 'Transfer';
+									}
+								);
+								setLoading(false);
+								console.log(transaction);
+								console.log(event);
+								if (event) {
+									console.log('Mint Sucessfull');
+									toast(`🎉 Mint Successful`);
+								} else {
+									console.log('Mint Unsuccessful');
+								}
+							} catch (error) {
+								console.log({error});
+								toast(`❌ Something went wrong! Please Try Again`);
+								setLoading(false);
+							}
+						} else {
+							console.log('Address is not allowlisted');
+							toast(
+								`❌ Your address is not allowlisted please try to use other address`
+							);
+							setLoading(false);
+						}
+					} else {
+						toast(`❌ Please Apply discount code`);
+						setLoading(false);
+					}
+				});
 			} else if (mintType === MINTS.PUBLIC) {
 				try {
 					const transaction = await contract
@@ -217,7 +283,8 @@ const MintPageComp = ({contract, signer}) => {
 				console.log('Mint is allowlisted');
 				const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
 				console.log({hashCID});
-				getMerkleHashes(hashCID).then(async hashes => {
+
+				getMerkleHashes().then(async hashes => {
 					console.log({hashes});
 					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
