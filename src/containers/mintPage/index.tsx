@@ -10,7 +10,16 @@ import {
 	hashQueryData,
 } from './utils';
 import {BigNumber, ethers} from 'ethers';
-import {MINTS, MINT_NAME, SALE_ID} from './constants';
+import {
+	ALLOWLIST_ERROR,
+	DISCOUNTED_ERROR,
+	ERROR,
+	ERROR_MESSAGE,
+	MINTS,
+	MINT_NAME,
+	SALE_ID,
+	SUCCESS_MESSAGE,
+} from './constants';
 import toast, {Toaster} from 'react-hot-toast';
 import If from 'src/components/If';
 import DiscountCodeComp from './components/DiscountCodeComp';
@@ -19,7 +28,6 @@ import Image from 'next/image';
 import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
 import {networkSelector} from 'src/redux/network';
-import Buttonbg from 'public/static/images/BUTTON.png';
 import MerkleTree from 'merkletreejs';
 import {MINT_SALE_ID} from 'src/utils/constants';
 
@@ -83,8 +91,6 @@ const MintPageComp = ({contract, signer}) => {
 				const balanceInEth = ethers.utils.formatEther(balance);
 				console.log(`balance: ${balanceInEth} ETH`);
 			});
-			console.log(balance);
-			// console.log(ethers.utils.formatUnits(balance));
 			setPerTransactionLimit(parseInt(transactionsLimit));
 			setPerWalletLimit(parseInt(walletLimit));
 			setSupply(parseInt(nftSupply));
@@ -124,14 +130,6 @@ const MintPageComp = ({contract, signer}) => {
 			if (mintType === MINTS.DISCOUNTED_ALLOWLISTED) {
 				console.log('Mint is discounted allowlisted');
 			} else if (mintType === MINTS.PUBLIC) {
-				console.log('Mint is public');
-				console.log('INPUT OF PUBLIC MINT', {
-					address: user.address,
-					Tokens: noOfTokens,
-					saleId: MINT_SALE_ID,
-					value: BigNumber.from(noOfTokens).mul(price),
-				});
-				console.log(signer);
 				try {
 					const transaction = await contract
 						?.connect(signer)
@@ -142,76 +140,79 @@ const MintPageComp = ({contract, signer}) => {
 						return event.event === 'Transfer';
 					});
 					setLoading(false);
-					console.log(transaction);
-					console.log(event);
 					if (event) {
-						console.log('Mint Sucessfull');
-						toast(`🎉 Mint Sucessful`);
+						toast(SUCCESS_MESSAGE);
 					} else {
-						console.log('Mint Unsuccessful');
+						toast(ERROR);
 					}
 				} catch (error) {
 					console.log({error});
-					toast(`❌ Something went wrong! Please Try Again`);
+					toast(ERROR);
 					setLoading(false);
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
-				// if (discountCode) {
 				if (discountCode) {
 					console.log('Mint is discounted');
-
-					// console.log(discountCode?.discountedPrice.toHex)
 					try {
 						console.log(discountCode);
-
-						// console.log('INPUT PARAMS:', {
-						// 	address: user.address,
-						// 	Tokens: noOfTokens,
-						// 	saleId: 2,
-						// 	index: discountCode?.discountIndex,
-						// 	price: discountCode?.discountedPrice,
-						// 	signature: discountCode?.discountSignature,
-						// 	value: BigNumber.from(noOfTokens).mul(
-						// 		discountCode.discountedPrice
-						// 	),
-						// });
 						if (discountCode) {
-							const transaction = await contract
-								?.connect(signer)
-								?.mintDiscounted(
-									user.address,
-									noOfTokens,
-									MINT_SALE_ID,
-									//@ts-ignore
-									discountCode.discountIndex,
-									//@ts-ignore
-									discountCode.discountedPrice,
-									//@ts-ignore
-									discountCode.discountSignature,
-									{
-										value: BigNumber.from(noOfTokens).mul(
-											//@ts-ignore
-											discountCode.discountedPrice
-										),
-									}
-								);
-							console.log('Transaction:', transaction);
-							const event = (await transaction.wait()).events?.filter(
-								event => event.event === 'ApprovalForAll'
+							const estimateGas = await contract.estimateGas.mintDiscounted(
+								user.address,
+								noOfTokens,
+								MINT_SALE_ID,
+								//@ts-ignore
+								discountCode.discountIndex,
+								//@ts-ignore
+								discountCode.discountedPrice,
+								//@ts-ignore
+								discountCode.discountSignature,
+								{
+									value: BigNumber.from(noOfTokens).mul(
+										//@ts-ignore
+										discountCode.discountedPrice
+									),
+								}
 							);
-							setLoading(false);
-							// console.log(event);
+							if (estimateGas) {
+								const transaction = await contract
+									?.connect(signer)
+									?.mintDiscounted(
+										user.address,
+										noOfTokens,
+										MINT_SALE_ID,
+										//@ts-ignore
+										discountCode.discountIndex,
+										//@ts-ignore
+										discountCode.discountedPrice,
+										//@ts-ignore
+										discountCode.discountSignature,
+										{
+											value: BigNumber.from(noOfTokens).mul(
+												//@ts-ignore
+												discountCode.discountedPrice
+											),
+										}
+									);
+								console.log('Transaction:', transaction);
+								const event = (await transaction.wait()).events?.filter(
+									event => event.event === 'ApprovalForAll'
+								);
+								toast(SUCCESS_MESSAGE);
+								setLoading(false);
+							} else {
+								toast(ERROR_MESSAGE);
+								setLoading(false);
+							}
 						}
 					} catch (error) {
 						console.log({error});
-						toast(`❌ Something went wrong! Please Try Again`);
+						toast(ERROR_MESSAGE);
 						setLoading(false);
 					}
 				} else {
-					toast(`❌ Please Apply discount code`);
+					toast(DISCOUNTED_ERROR);
 					setLoading(false);
 				}
-				// }
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
 				const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
@@ -220,54 +221,62 @@ const MintPageComp = ({contract, signer}) => {
 					console.log({hashes});
 					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
-					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+						sortPairs: true,
+					});
+					console.log(tree.toString());
 					if (hashes.includes(user.address)) {
 						console.log(leafs);
 						console.log('Address is allowlisted');
 						console.log(leafs[hashes.indexOf(user.address)]);
-						const leaf = ethers.utils.keccak256(
-							leafs[hashes.indexOf(user.address)]
-						);
-						const proofs = tree.getHexProof(
-							leafs[hashes.indexOf(user.address)]
-						);
+						const leaf = leafs[hashes.indexOf(user.address)];
+						const proofs = tree.getHexProof(leaf);
 						console.log({proofs});
 						try {
-							const transaction = await contract
-								?.connect(signer)
-								?.mintAllowlisted(
-									user.address,
-									noOfTokens,
-									proofs,
-									MINT_SALE_ID,
-									{
-										value: BigNumber.from(noOfTokens).mul(price),
+							const estimateGas = await contract.estimateGas.mintAllowlisted(
+								user.address,
+								noOfTokens,
+								proofs,
+								MINT_SALE_ID,
+								{
+									value: BigNumber.from(noOfTokens).mul(price),
+								}
+							);
+							if (estimateGas) {
+								const transaction = await contract
+									?.connect(signer)
+									?.mintAllowlisted(
+										user.address,
+										noOfTokens,
+										proofs,
+										MINT_SALE_ID,
+										{
+											value: BigNumber.from(noOfTokens).mul(price),
+										}
+									);
+								console.log(transaction);
+								setLoading(false);
+								const event = (await transaction.wait()).events?.filter(
+									event => {
+										return event.event === 'Transfer';
 									}
 								);
-							console.log(transaction);
-							setLoading(false);
-							const event = (await transaction.wait()).events?.filter(event => {
-								return event.event === 'Transfer';
-							});
-							setLoading(false);
-							console.log(transaction);
-							console.log(event);
-							if (event) {
-								console.log('Mint Sucessfull');
-								toast(`🎉 Mint Successful`);
+								setLoading(false);
+								if (event) {
+									toast(SUCCESS_MESSAGE);
+								} else {
+									toast(ERROR_MESSAGE);
+								}
 							} else {
-								console.log('Mint Unsuccessful');
+								toast(ERROR_MESSAGE);
 							}
 						} catch (error) {
 							console.log({error});
-							toast(`❌ Something went wrong! Please Try Again`);
+							toast(ERROR_MESSAGE);
 							setLoading(false);
 						}
 					} else {
-						console.log('Address is not allowlisted');
-						toast(
-							`❌ Your address is not allowlisted please try to use other address`
-						);
+						toast(ALLOWLIST_ERROR);
 						setLoading(false);
 					}
 				});
@@ -286,33 +295,12 @@ const MintPageComp = ({contract, signer}) => {
 		}
 	}, [noOfTokens]);
 
-	// useEffect(() => {
-	// 	const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
-	// 	console.log({hashCID});
-	// 	getMerkleHashes(hashCID).then(hashes => {
-	// 		console.log({hashes});
-	// 		const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
-	// 		const tree = new MerkleTree(leafs, ethers.utils.keccak256);
-	// 		// console.log({leafs, tree});
-	// 		const leaf = ethers.utils.keccak256(leafs[0]);
-	// 		const proofs = tree.getHexProof(leafs[0]);
-	// 		console.log({proofs});
-	// 	});
-	// }, []);
-
 	return (
 		<div className="flex justify-center items-center flex-col">
 			<Toaster position="top-center" />
 			<If
 				condition={user.exists}
 				then={
-					// <div className="flex justify-center items-center absolute top-[25%]">
-					// 	<DiscountCodeComp
-					// 		setDiscountCode={setDiscountCode}
-					// 		setShowDiscountComp={setShowDiscountComp}
-					// 		discountCode={discountCode}
-					// 	/>
-					// </div>
 					<div className="flex justify-center items-center flex-col">
 						<LogoComp />
 						<a className="text-[#ffa800] cursor-pointer pb-3">
@@ -406,11 +394,6 @@ const MintPageComp = ({contract, signer}) => {
 								</div>
 							}
 							else={
-								// <div className="flex justify-center items-center flex-col gap-14">
-								// 	<div className="w-[500px] flex justify-center items-center">
-								// 		<ConnectWallet />
-								// 	</div>
-								// </div>
 								<div className="flex justify-center items-center absolute top-[25%]">
 									<DiscountCodeComp
 										setDiscountCode={setDiscountCode}
