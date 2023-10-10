@@ -129,43 +129,21 @@ const MintPageComp = ({contract, signer}) => {
 			console.log(mintType);
 			if (mintType === MINTS.DISCOUNTED_ALLOWLISTED) {
 				console.log('Mint is discounted allowlisted');
-				getMerkleHashes().then(async hashes => {
-					console.log({hashes});
-					//@ts-expect-error
-					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
-					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
-						sortPairs: true,
-					});
-					if (discountCode) {
-						if (hashes.includes(user.address)) {
-							const leaf = leafs[hashes.indexOf(user.address)];
-							const proofs = tree.getHexProof(leaf);
-							try {
-								const estimateGas =
-									await contract.estimateGas.mintDiscountedAllowlist(
-										user.address,
-										noOfTokens,
-										proofs,
-										MINT_SALE_ID,
-										//@ts-ignore
-										discountCode.discountIndex,
-										//@ts-ignore
-										discountCode.discountedPrice,
-										//@ts-ignore
-										discountCode.discountSignature,
-										{
-											value: BigNumber.from(noOfTokens).mul(
-												//@ts-ignore
-												discountCode.discountedPrice
-											),
-										}
-									);
-
-								if (estimateGas) {
-									console.log('Gas Estimation successfull');
-									const transaction = await contract
-										?.connect(signer)
-										?.mintDiscountedAllowlist(
+				getMerkleHashes()
+					.then(async hashes => {
+						console.log({hashes});
+						//@ts-expect-error
+						const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+						const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+							sortPairs: true,
+						});
+						if (discountCode) {
+							if (hashes && hashes.includes(user.address)) {
+								const leaf = leafs[hashes.indexOf(user.address)];
+								const proofs = tree.getHexProof(leaf);
+								try {
+									const estimateGas =
+										await contract.estimateGas.mintDiscountedAllowlist(
 											user.address,
 											noOfTokens,
 											proofs,
@@ -183,40 +161,67 @@ const MintPageComp = ({contract, signer}) => {
 												),
 											}
 										);
-									console.log(transaction);
-									setLoading(false);
-									const event = (await transaction.wait()).events?.filter(
-										event => {
-											return event.event === 'Transfer';
+
+									if (estimateGas) {
+										console.log('Gas Estimation successfull');
+										const transaction = await contract
+											?.connect(signer)
+											?.mintDiscountedAllowlist(
+												user.address,
+												noOfTokens,
+												proofs,
+												MINT_SALE_ID,
+												//@ts-ignore
+												discountCode.discountIndex,
+												//@ts-ignore
+												discountCode.discountedPrice,
+												//@ts-ignore
+												discountCode.discountSignature,
+												{
+													value: BigNumber.from(noOfTokens).mul(
+														//@ts-ignore
+														discountCode.discountedPrice
+													),
+												}
+											);
+										console.log(transaction);
+										const event = (await transaction.wait()).events?.filter(
+											event => {
+												return event.event === 'Transfer';
+											}
+										);
+										console.log(transaction);
+										console.log(event);
+										if (event) {
+											console.log('Mint Sucessfull');
+											toast(SUCCESS_MESSAGE);
+										} else {
+											console.log('Mint Unsuccessful');
 										}
-									);
-									console.log(transaction);
-									console.log(event);
-									if (event) {
-										console.log('Mint Sucessfull');
-										toast(SUCCESS_MESSAGE);
 									} else {
-										console.log('Mint Unsuccessful');
+										console.log('Gas Estimation Unsuccessfull');
+										toast(ERROR_MESSAGE);
+										setLoading(false);
 									}
-								} else {
-									console.log('Gas Estimation Unsuccessfull');
+								} catch (error) {
+									console.log({error});
 									toast(ERROR_MESSAGE);
+									setLoading(false);
 								}
-							} catch (error) {
-								console.log({error});
-								toast(ERROR_MESSAGE);
+							} else {
+								console.log('Address is not allowlisted');
+								toast(ALLOWLIST_ERROR);
 								setLoading(false);
 							}
 						} else {
-							console.log('Address is not allowlisted');
-							toast(ALLOWLIST_ERROR);
+							toast(DISCOUNTED_ERROR);
 							setLoading(false);
 						}
-					} else {
-						toast(DISCOUNTED_ERROR);
+					})
+					.catch(err => {
+						toast(ERROR_MESSAGE);
 						setLoading(false);
-					}
-				});
+					});
 			} else if (mintType === MINTS.PUBLIC) {
 				try {
 					const estimateGas = await contract.estimateGas.mintPublic(
@@ -323,64 +328,69 @@ const MintPageComp = ({contract, signer}) => {
 				}
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
-				getMerkleHashes().then(async hashes => {
-					console.log({hashes});
-					//@ts-expect-error
-					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
-					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
-						sortPairs: true,
-					});
-					console.log(tree.toString());
-					if (hashes.includes(user.address)) {
-						const leaf = leafs[hashes.indexOf(user.address)];
-						const proofs = tree.getHexProof(leaf);
-						try {
-							const estimateGas = await contract.estimateGas.mintAllowlisted(
-								user.address,
-								noOfTokens,
-								proofs,
-								MINT_SALE_ID,
-								{
-									value: BigNumber.from(noOfTokens).mul(price),
-								}
-							);
-							if (estimateGas) {
-								const transaction = await contract
-									?.connect(signer)
-									?.mintAllowlisted(
-										user.address,
-										noOfTokens,
-										proofs,
-										MINT_SALE_ID,
-										{
-											value: BigNumber.from(noOfTokens).mul(price),
-										}
-									);
-								console.log(transaction);
-								const event = (await transaction.wait()).events?.filter(
-									event => {
-										return event.event === 'Transfer';
+				getMerkleHashes()
+					.then(async hashes => {
+						console.log({hashes});
+						//@ts-expect-error
+						const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+						const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+							sortPairs: true,
+						});
+						console.log(tree.toString());
+						if (hashes.includes(user.address)) {
+							const leaf = leafs[hashes.indexOf(user.address)];
+							const proofs = tree.getHexProof(leaf);
+							try {
+								const estimateGas = await contract.estimateGas.mintAllowlisted(
+									user.address,
+									noOfTokens,
+									proofs,
+									MINT_SALE_ID,
+									{
+										value: BigNumber.from(noOfTokens).mul(price),
 									}
 								);
-								if (event) {
-									setLoading(false);
-									toast(SUCCESS_MESSAGE);
+								if (estimateGas) {
+									const transaction = await contract
+										?.connect(signer)
+										?.mintAllowlisted(
+											user.address,
+											noOfTokens,
+											proofs,
+											MINT_SALE_ID,
+											{
+												value: BigNumber.from(noOfTokens).mul(price),
+											}
+										);
+									console.log(transaction);
+									const event = (await transaction.wait()).events?.filter(
+										event => {
+											return event.event === 'Transfer';
+										}
+									);
+									if (event) {
+										setLoading(false);
+										toast(SUCCESS_MESSAGE);
+									} else {
+										toast(ERROR_MESSAGE);
+									}
 								} else {
 									toast(ERROR_MESSAGE);
 								}
-							} else {
+							} catch (error) {
+								console.log({error});
 								toast(ERROR_MESSAGE);
+								setLoading(false);
 							}
-						} catch (error) {
-							console.log({error});
-							toast(ERROR_MESSAGE);
+						} else {
+							toast(ALLOWLIST_ERROR);
 							setLoading(false);
 						}
-					} else {
-						toast(ALLOWLIST_ERROR);
+					})
+					.catch(err => {
+						toast(ERROR_MESSAGE);
 						setLoading(false);
-					}
-				});
+					});
 			}
 		} else {
 			console.log('No of tokens is not provided');
