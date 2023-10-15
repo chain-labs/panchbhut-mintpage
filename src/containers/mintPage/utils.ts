@@ -25,7 +25,7 @@ export const hashQueryData = (query) => {
     return hash
   }
 
-export const getMerkleHashes = async (cid: string) => {
+export const getMerkleHashes = async () => {
     const { data } = await axios.get('https://gateway.pinata.cloud/ipfs/QmTQ8nEbEsQGb8uXb7cp5XF1meXhgWgXRDFNoNBYncZVjR')
     console.log(data)
     console.log(Object.values(data))
@@ -49,3 +49,5 @@ export const getMintType = async (allowListed,discounted) => {
         return MINTS.PUBLIC;
     }
 };
+
+export const getProofs = async()=>{}

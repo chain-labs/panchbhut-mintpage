@@ -16,6 +16,8 @@ module.exports = {
 				'input-lg': "url('/static/images/input_bg.png",
 				'button-sm': "url('/static/images/button_bg.png')",
 				'coupon-code-lg': "url('/static/images/coupon_code.jpg')",
+				'success-lg': "url('/static/images/success_button.png')",
+				'error-lg': "url('/static/images/error_button.png')",
 			},
 		},
 	},

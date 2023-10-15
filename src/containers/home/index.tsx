@@ -32,22 +32,31 @@ const HomeContainer = () => {
 		<div className=" min-h-screen bg-home-lg bg-cover bg-center bg-no-repeat ">
 			<div className="flex justify-center items-center flex-col pt-32">
 				<LogoComp />
-				<div className="text-center text-[#ffa800]">
-					{' '}
-					Unique Multiverse storyline
-					<div>20K+ possible mix of traits & layers</div>
-					<div>Demi-Gods, Demons & Creatures 80+ Unique Characters</div>
-					<div>8+ Clans</div>
-					<div>Possibilities are endless!</div>
-					<div>Panchbhut Gameverse Collect now to see</div>
-					<div>what's in store for you! </div>
+				<div className="flex justify-center items-center flex-col">
+					<div className="text-center text-[#ffa800] text-[17px] flex flex-col gap-1">
+						{' '}
+						<div>Unique Multiverse storyline</div>
+						<div>20K+ possible mix of traits & layers</div>
+						<div>Demi-Gods, Demons & Creatures </div>
+						<div>80+ Unique Characters</div>
+						<div>8+ Clans</div>
+					</div>
+					<div className="text-[#ffffff] text-[22px]">
+						Possibilities are endless!
+					</div>
+					<div className="text-[#ffa800] text-[32px]">Panchbhut Gameverse</div>
+					<div className="text-[#ffffff] text-[22px]">
+						Collect now to see what's in store for you!{' '}
+					</div>
 				</div>
 				<div>
 					<button
-						className="bg-collect-button w-[368px] h-20 object-contain text-[#0e0e0e] flex justify-center items-center bg-no-repeat rounded"
+						className="bg-collect-button w-[368px] h-20 text-[#0e0e0e] flex justify-center items-center bg-no-repeat rounded "
 						onClick={() => push('/mint-page')}
 					>
-						Collect & Discover
+						<div className="text-[#0e0e0e] text-[16px] font-bold mt-1">
+							Collect & Discover
+						</div>
 					</button>
 				</div>
 			</div>

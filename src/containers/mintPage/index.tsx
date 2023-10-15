@@ -31,15 +31,19 @@ const MintPageComp = ({contract, signer}) => {
 	const [price, setPrice] = useState<BigNumber>();
 	const [noOfTokens, setNoOfTokens] = useState<number>(1);
 	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
-	const [discountCode, setDiscountCode] = useState('');
+	const [discountCode, setDiscountCode] = useState();
 	const user = useAppSelector(userSelector);
 	const [supply, setSupply] = useState<number>();
 	const [tokensMinted, setTokensMinted] = useState<number>();
 	const [loading, setLoading] = useState(false);
 	const [perTransactionLimit, setPerTransactionLimit] = useState<number>();
 	const [perWalletLimit, setPerWalletLimit] = useState<number>();
+	const [minted, setMinted] = useState<boolean>(false);
+	const [mintSuccessful, setMintSuccessful] = useState<boolean>();
 	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
+	const [isDiscountCodeValid, setIsDiscountCodeValid] = useState(false);
+	const [hash, setHash] = useState([]);
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
@@ -102,6 +106,17 @@ const MintPageComp = ({contract, signer}) => {
 		getCurrentMintType();
 	}, [discounted, allowListed]);
 
+	useEffect(() => {
+		if (discountCode) {
+			//@ts-ignore
+			if (discountCode?.receiverAddress !== user.address) {
+				toast('❌ This code is not applicable to your address');
+			} else {
+				setIsDiscountCodeValid(true);
+			}
+		}
+	}, [discountCode]);
+
 	//Below function checks the mint type and according to the minttype it calls the required function
 	const mintController = async () => {
 		setLoading(true);
@@ -109,6 +124,71 @@ const MintPageComp = ({contract, signer}) => {
 			console.log(mintType);
 			if (mintType === MINTS.DISCOUNTED_ALLOWLISTED) {
 				console.log('Mint is discounted allowlisted');
+				getMerkleHashes().then(async hashes => {
+					console.log({hashes});
+					//@ts-expect-error
+					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+						sortPairs: true,
+					});
+					if (discountCode) {
+						if (hashes.includes(user.address) && discountCode) {
+							const leaf = leafs[hashes.indexOf(user.address)];
+							const proofs = tree.getHexProof(leaf);
+							try {
+								const transaction = await contract
+									?.connect(signer)
+									?.mintDiscountedAllowlist(
+										user.address,
+										noOfTokens,
+										proofs,
+										MINT_SALE_ID,
+										//@ts-ignore
+										discountCode.discountIndex,
+										//@ts-ignore
+										discountCode.discountedPrice,
+										//@ts-ignore
+										discountCode.discountSignature,
+										{
+											value: BigNumber.from(noOfTokens).mul(
+												//@ts-ignore
+												discountCode.discountedPrice
+											),
+										}
+									);
+								console.log(transaction);
+								setLoading(false);
+								const event = (await transaction.wait()).events?.filter(
+									event => {
+										return event.event === 'Transfer';
+									}
+								);
+								setLoading(false);
+								console.log(transaction);
+								console.log(event);
+								if (event) {
+									console.log('Mint Sucessfull');
+									toast(`🎉 Mint Successful`);
+								} else {
+									console.log('Mint Unsuccessful');
+								}
+							} catch (error) {
+								console.log({error});
+								toast(`❌ Something went wrong! Please Try Again`);
+								setLoading(false);
+							}
+						} else {
+							console.log('Address is not allowlisted');
+							toast(
+								`❌ Your address is not allowlisted please try to use other address`
+							);
+							setLoading(false);
+						}
+					} else {
+						toast(`❌ Please Apply discount code`);
+						setLoading(false);
+					}
+				});
 			} else if (mintType === MINTS.PUBLIC) {
 				console.log('Mint is public');
 				console.log('INPUT OF PUBLIC MINT', {
@@ -142,16 +222,57 @@ const MintPageComp = ({contract, signer}) => {
 					setLoading(false);
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
-				console.log('Mint is discounted');
+				if (discountCode) {
+					console.log('Mint is discounted');
+					try {
+						console.log(discountCode);
+						if (discountCode) {
+							const transaction = await contract
+								?.connect(signer)
+								?.mintDiscounted(
+									user.address,
+									noOfTokens,
+									MINT_SALE_ID,
+									//@ts-ignore
+									discountCode.discountIndex,
+									//@ts-ignore
+									discountCode.discountedPrice,
+									//@ts-ignore
+									discountCode.discountSignature,
+									{
+										value: BigNumber.from(noOfTokens).mul(
+											//@ts-ignore
+											discountCode.discountedPrice
+										),
+									}
+								);
+							console.log('Transaction:', transaction);
+							const event = (await transaction.wait()).events?.filter(
+								event => event.event === 'ApprovalForAll'
+							);
+							setLoading(false);
+						}
+					} catch (error) {
+						console.log({error});
+						toast(`❌ Something went wrong! Please Try Again`);
+						setLoading(false);
+					}
+				} else {
+					toast(`❌ Please Apply discount code`);
+					setLoading(false);
+				}
+				// }
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				console.log('Mint is allowlisted');
 				const hashCID = 'QmT8f4uVSiUAMHB7P4Ln617ZnwqUhEjEMPNBttMrvd5L5Z';
 				console.log({hashCID});
-				getMerkleHashes(hashCID).then(async hashes => {
+
+				getMerkleHashes().then(async hashes => {
 					console.log({hashes});
 					//@ts-expect-error
 					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
 					const tree = new MerkleTree(leafs, ethers.utils.keccak256);
+
 					if (hashes.includes(user.address)) {
 						console.log(leafs);
 						console.log('Address is allowlisted');
@@ -311,12 +432,20 @@ const MintPageComp = ({contract, signer}) => {
 												/>
 											</button>
 										</div>
-										<a
-											className="text-[#5fca00] cursor-pointer"
-											onClick={e => setShowDiscountComp(true)}
-										>
-											APPLY COUPON CODE
-										</a>
+										<If
+											condition={mintType === 2 || mintType === 1}
+											then={
+												<a
+													className="text-[#5fca00] cursor-pointer"
+													onClick={e => setShowDiscountComp(true)}
+												>
+													{isDiscountCodeValid
+														? 'APPLIED'
+														: 'APPLY COUPON CODE'}
+												</a>
+											}
+										/>
+
 										<button
 											className="bg-button-sm w-[183px] h-20 border border-transparent rounded-lg object-fill text-[#0e0e0e] flex justify-center items-start bg-no-repeat mt-4"
 											onClick={mintController}
