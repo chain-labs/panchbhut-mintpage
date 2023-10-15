@@ -51,9 +51,7 @@ const MintPage = () => {
 				}
 				else={
 					<div className="flex justify-center items-center flex-col">
-						{/* <div className="w-[500px] flex justify-center items-center top-52"> */}
 						<ConnectWallet />
-						{/* </div> */}
 					</div>
 				}
 			/>
