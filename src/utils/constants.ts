@@ -20,6 +20,8 @@ export const NETWORK: string = getNetwork()
 
 export const MINT_SALE_ID=process.env.NEXT_PUBLIC_SALE_ID
 
+export const IPFS_HASH = process.env.NEXT_PUBLIC_IPFS_HASH
+
 
 
 export const getChain = () => {

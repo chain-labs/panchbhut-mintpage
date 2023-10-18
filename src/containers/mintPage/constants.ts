@@ -17,3 +17,7 @@ export const MINTS = {
     ALLOWLIST:'3',
     DISCOUT_ALLOWLIST:'4',
   }
+  export const SUCCESS_MESSAGE="🎉 Mint Successful"
+  export const ERROR_MESSAGE="❌ Something went wrong! Please Try Again"
+  export const ALLOWLIST_ERROR ="❌ Your address is not allowlisted please try to use other address"
+  export const DISCOUNTED_ERROR="❌ Please Apply discount code"
