@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { MINTS } from "./constants";
 import axios from 'axios'
+import { IPFS_HASH } from "src/utils/constants";
 
 
 //function definition:
@@ -26,7 +27,7 @@ export const hashQueryData = (query) => {
   }
 
 export const getMerkleHashes = async () => {
-    const { data } = await axios.get('https://gateway.pinata.cloud/ipfs/QmTQ8nEbEsQGb8uXb7cp5XF1meXhgWgXRDFNoNBYncZVjR')
+    const { data } = await axios.get(`https://gateway.pinata.cloud/ipfs/${IPFS_HASH}`)
     console.log(data)
     console.log(Object.values(data))
     return Object.values(data)
