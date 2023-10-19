@@ -23,6 +23,7 @@ const MintPage = () => {
 	const network = useAppSelector(networkSelector);
 	const [contractExists, setContractExists] = useState<boolean>(false);
 	const dispatch = useDispatch();
+	const router = useRouter();
 
 	useEffect(() => {
 		if (contractAddress && provider && network.isValid) {
@@ -50,8 +51,21 @@ const MintPage = () => {
 					</div>
 				}
 				else={
-					<div className="flex justify-center items-center flex-col">
+					<div className="flex justify-center items-center flex-col gap-3">
 						<ConnectWallet />
+						<div className="flex justify-around items-center text-[#ffa800]">
+							OR
+						</div>
+						<div>
+							<button
+								className="bg-yellow-600 w-[368px] h-10 flex justify-center items-center bg-no-repeat rounded "
+								onClick={() => router.replace('/pay-with-card')}
+							>
+								<div className=" text-white text-[16px] font-bold">
+									PAY WITH CARD
+								</div>
+							</button>
+						</div>
 					</div>
 				}
 			/>
