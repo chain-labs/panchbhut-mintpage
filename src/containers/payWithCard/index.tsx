@@ -4,10 +4,25 @@ import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
 import Image from 'next/image';
 import {MINT_SALE_ID} from 'src/utils/constants';
-import {BigNumber} from 'ethers';
-import {getIsMintAllowListed, getMintType} from '../mintPage/utils';
-import {MINTS} from '../mintPage/constants';
+import {BigNumber, ethers} from 'ethers';
+import {
+	getIsMintAllowListed,
+	getMerkleHashes,
+	getMintType,
+} from '../mintPage/utils';
+import {
+	ALLOWLIST_ERROR,
+	ERROR_MESSAGE,
+	MINTS,
+	MINT_NAME,
+} from '../mintPage/constants';
 import If from 'src/components/If';
+import MerkleTree from 'merkletreejs';
+import {useAppSelector} from 'src/redux/hooks';
+import {userSelector} from 'src/redux/user';
+import toast, {Toaster} from 'react-hot-toast';
+import DiscountCodeComp from '../mintPage/components/DiscountCodeComp';
+import LogoComp from '../mintPage/components/LogoComp';
 
 const CrossmintComponent = ({contract}) => {
 	const [noOfTokens, setNoOfTokens] = useState<number>(1);
@@ -21,7 +36,16 @@ const CrossmintComponent = ({contract}) => {
 	const [discounted, setDiscounted] = useState<boolean>();
 	const [allowListed, setAllowListed] = useState<boolean>();
 	const [mintType, setMintType] = useState<number>();
-	const [price, setPrice] = useState<BigNumber>();
+	const [price, setPrice] = useState();
+	const user = useAppSelector(userSelector);
+	const [showDiscountComp, setShowDiscountComp] = useState<boolean>(false);
+	const [discountCode, setDiscountCode] = useState();
+	const [isDiscountCodeValid, setIsDiscountCodeValid] = useState(false);
+	const [discountIndex, setDiscountIndex] = useState<string>('');
+	const [discountedPrice, setDiscountedPrice] = useState();
+	const [discountedSignature, setDiscountedSignature] = useState();
+	const [ethPrice, setEthPrice] = useState('');
+	const [proofs, setProofs] = useState([]);
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
@@ -81,100 +105,301 @@ const CrossmintComponent = ({contract}) => {
 		getCurrentMintType();
 	}, [discounted, allowListed]);
 
-	return (
-		<div>
-			<div className="flex flex-col items-center">
-				<label className="text-[#ffa800]">Reciever Address</label>
-				<div className="flex justify-center items-center gap-2">
-					<input
-						className="input w-80 h-[35px] bg-slate-300 rounded text-center text-xs text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-						type="text"
-						onWheel={e => {
-							// @ts-ignore
-							e.target?.blur();
-						}}
-						min={1}
-						// max={`${perTransactionLimit}`}
-						value={receiverAddress}
-						onChange={e => setReceiverAddress(e.target?.value)}
-					/>
-				</div>
-			</div>
-			<div className="flex flex-col items-center mt-4">
-				<label className="text-[#ffa800]">MINT QTY</label>
-
-				<div className="flex justify-center items-center gap-2">
-					<button
-						className="mt-2"
-						onClick={e => setNoOfTokens(noOfTokens - 1)}
-					>
-						<Image
-							src={MinusImg}
-							alt=""
-						/>
-					</button>
-					<input
-						className="input w-20 h-[35px] bg-slate-300 rounded text-center text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-						type="number"
-						onWheel={e => {
-							// @ts-ignore
-							e.target?.blur();
-						}}
-						min={1}
-						// max={`${perTransactionLimit}`}
-						value={noOfTokens}
-						onChange={e => setNoOfTokens(parseInt(e.target?.value))}
-					/>
-					<button
-						className="mt-2"
-						onClick={e => setNoOfTokens(noOfTokens + 1)}
-					>
-						<Image
-							src={PlusImg}
-							alt=""
-						/>
-					</button>
-				</div>
-			</div>
-			<div className="flex justify-center items-center mt-4">
-				<If
-					condition={mintType === MINTS.DISCOUNTED_ALLOWLISTED}
-					then={<div></div>}
-				/>
-				<If
-					condition={mintType === MINTS.PUBLIC}
-					then={<div></div>}
-				/>
-				<If
-					condition={mintType === MINTS.ALLOWLISTED}
-					then={<div>Hi</div>}
-				/>
-				<If
-					condition={mintType === MINTS.DISCOUNTED}
-					then={
-						<CrossmintPayButton
-							projectId="1d2587be-f150-4661-8377-5445a43d5719"
-							collectionId="47f94c27-06b4-4089-b685-087f095159c3"
-							environment="staging"
-							mintTo="0x5F5A30564388e7277818c15DB0d511AAbbD0eC80"
-							mintConfig={{
-								type: 'erc-721',
-								quantity: [1],
-								totalPrice: '0.000009',
-								_receiver: '0x5F5A30564388e7277818c15DB0d511AAbbD0eC80',
-								_numberOfTokens: '1',
-								_saleId: '18',
-								_discountIndex: '58',
-								_discountedPrice: '9000000000000',
-								_signature:
-									'0x034b290b00a2e63da9e3af623112a08f458c21d36da89ad743672769cec79cba7853ae73f748ebd139d1b39b50e7a0c5dd70d9e3ae4944aa922d1ace3c9cecac1b',
-								// your custom minting arguments...
-							}}
-						/>
+	useEffect(() => {
+		if (noOfTokens && receiverAddress) {
+			console.log(mintType);
+			if (mintType === MINTS.DISCOUNTED_ALLOWLISTED) {
+				console.log('Mint is discounted allowlisted');
+				getMerkleHashes().then(async hashes => {
+					console.log({hashes});
+					//@ts-expect-error
+					const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+					const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+						sortPairs: true,
+					});
+					if (discountCode) {
+						if (hashes.includes(receiverAddress) && discountCode) {
+							const leaf = leafs[hashes.indexOf(receiverAddress)];
+							const proofs = tree.getHexProof(leaf);
+							setProofs(proofs);
+							//@ts-ignore
+							setDiscountIndex((discountCode?.discountIndex).toString());
+							//@ts-ignore
+							setDiscountedPrice(discountCode?.discountedPrice);
+							//@ts-ignore
+							setDiscountedSignature(discountCode?.discountSignature);
+							setEthPrice(
+								(
+									noOfTokens *
+									//@ts-ignore
+									(discountCode?.discountedPrice / 1000000000000000000)
+								).toString()
+							);
+						} else {
+							console.log('Address is not allowlisted');
+							toast(
+								`❌ Your address is not allowlisted please try to use other address`
+							);
+							setLoading(false);
+						}
+					} else {
+						toast(`❌ Please Apply discount code`);
+						setLoading(false);
 					}
-				/>
-			</div>
-		</div>
+				});
+			} else if (mintType === MINTS.PUBLIC) {
+				if (noOfTokens && receiverAddress) {
+					setEthPrice(
+						(noOfTokens * (parseInt(price) / 1000000000000000000)).toString()
+					);
+					console.log(
+						(noOfTokens * (parseInt(price) / 1000000000000000000)).toString()
+					);
+				}
+			} else if (mintType === MINTS.DISCOUNTED) {
+				if (discountCode) {
+					//@ts-ignore
+					setDiscountIndex((discountCode?.discountIndex).toString());
+					//@ts-ignore
+					setDiscountedPrice(discountCode?.discountedPrice);
+					//@ts-ignore
+					setDiscountedSignature(discountCode?.discountSignature);
+					setEthPrice(
+						(
+							noOfTokens *
+							//@ts-ignore
+							(discountCode?.discountedPrice / 10000000000000000)
+						).toString()
+					);
+				}
+			} else if (mintType === MINTS.ALLOWLISTED) {
+				if (noOfTokens && receiverAddress) {
+					getMerkleHashes()
+						.then(async hashes => {
+							console.log({hashes});
+							//@ts-expect-error
+							const leafs = hashes.map(entry => ethers.utils.keccak256(entry));
+							const tree = new MerkleTree(leafs, ethers.utils.keccak256, {
+								sortPairs: true,
+							});
+							if (hashes && hashes.includes(receiverAddress)) {
+								const leaf = leafs[hashes.indexOf(receiverAddress)];
+								const proofs = tree.getHexProof(leaf);
+								setProofs(proofs);
+								setEthPrice(
+									(
+										noOfTokens *
+										(parseInt(price) / 1000000000000000000)
+									).toString()
+								);
+							} else {
+								console.log('Address is not allowlisted');
+								toast(ALLOWLIST_ERROR);
+								setLoading(false);
+							}
+						})
+						.catch(err => {
+							toast(ERROR_MESSAGE);
+							setLoading(false);
+						});
+				}
+			}
+		} else {
+			console.log(noOfTokens);
+			console.log('No of tokens is not provided');
+		}
+	}, [mintType, discountCode, receiverAddress, noOfTokens]);
+
+	useEffect(() => {
+		console.log('PROOFS INSIDE USEEFFECT:', proofs);
+	}, [proofs]);
+
+	return (
+		<If
+			condition={!showDiscountComp}
+			then={
+				<div className="flex flex-col items-center">
+					<LogoComp />
+					<Toaster position="top-center" />
+
+					<div className="flex flex-col items-center">
+						<a className="text-[#ffa800] cursor-pointer pb-3 mt-[-14px]">
+							{mintType ? `Mint is ${MINT_NAME[mintType].substr(4)}` : ''}
+						</a>
+
+						<label className="text-[#ffa800]">Reciever Address</label>
+						<div className="flex justify-center items-center gap-2">
+							<input
+								className="input w-80 h-[35px] bg-slate-300 rounded text-center text-xs text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								type="text"
+								onWheel={e => {
+									// @ts-ignore
+									e.target?.blur();
+								}}
+								value={receiverAddress}
+								//@ts-expect-error
+								onChange={e => setReceiverAddress(e.target?.value)}
+							/>
+						</div>
+					</div>
+					<div className="flex flex-col items-center mt-4">
+						<label className="text-[#ffa800]">MINT QTY</label>
+
+						<div className="flex justify-center items-center gap-2">
+							<button
+								className="mt-2"
+								onClick={e => setNoOfTokens(noOfTokens - 1)}
+							>
+								<Image
+									src={MinusImg}
+									alt=""
+								/>
+							</button>
+							<input
+								className="input w-20 h-[35px] bg-slate-300 rounded text-center text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								type="number"
+								onWheel={e => {
+									// @ts-ignore
+									e.target?.blur();
+								}}
+								min={1}
+								max={`${perTransactionLimit}`}
+								value={noOfTokens}
+								onChange={e => setNoOfTokens(parseInt(e.target?.value))}
+							/>
+							<button
+								className="mt-2"
+								onClick={e => setNoOfTokens(noOfTokens + 1)}
+							>
+								<Image
+									src={PlusImg}
+									alt=""
+								/>
+							</button>
+						</div>
+					</div>
+					<div className="flex justify-center items-center gap-2">
+						<If
+							condition={mintType === 2 || mintType === 1}
+							then={
+								<a
+									className="text-[#5fca00] cursor-pointer"
+									onClick={e => setShowDiscountComp(true)}
+								>
+									{isDiscountCodeValid ? 'APPLIED' : 'APPLY COUPON CODE'}
+								</a>
+							}
+						/>
+					</div>
+					<div className="flex justify-center items-center mt-4">
+						<If
+							condition={mintType === MINTS.DISCOUNTED_ALLOWLISTED}
+							then={
+								<div>
+									<CrossmintPayButton
+										projectId="1d2587be-f150-4661-8377-5445a43d5719"
+										collectionId="47f94c27-06b4-4089-b685-087f095159c6"
+										environment="staging"
+										mintTo={receiverAddress}
+										mintConfig={{
+											type: 'erc-721',
+											quantity: noOfTokens,
+											totalPrice: ethPrice,
+											_receiver: receiverAddress,
+											_numberOfTokens: noOfTokens,
+											_saleId: MINT_SALE_ID,
+											_proofs: proofs,
+											_discountIndex: discountIndex,
+											_discountedPrice: discountedPrice,
+											_signature: discountedSignature,
+											// your custom minting arguments...
+										}}
+									/>
+								</div>
+							}
+						/>
+						<If
+							condition={mintType === MINTS.PUBLIC}
+							then={
+								<div>
+									<CrossmintPayButton
+										projectId="1d2587be-f150-4661-8377-5445a43d5719"
+										collectionId="47f94c27-06b4-4089-b685-087f095159c4"
+										environment="staging"
+										mintTo={receiverAddress}
+										mintConfig={{
+											type: 'erc-721',
+											quantity: noOfTokens,
+											totalPrice: ethPrice,
+											_receiver: receiverAddress,
+											_numberOfTokens: noOfTokens,
+											_saleId: MINT_SALE_ID,
+											// your custom minting arguments...
+										}}
+									/>
+								</div>
+							}
+						/>
+						<If
+							condition={mintType === MINTS.ALLOWLISTED}
+							then={
+								<div>
+									<CrossmintPayButton
+										projectId="1d2587be-f150-4661-8377-5445a43d5719"
+										collectionId="47f94c27-06b4-4089-b685-087f095159c5"
+										environment="staging"
+										mintTo={receiverAddress}
+										mintConfig={{
+											type: 'erc-721',
+											quantity: noOfTokens,
+											totalPrice: ethPrice,
+											_receiver: receiverAddress,
+											_numberOfTokens: noOfTokens,
+											_proofs: proofs,
+											_saleId: MINT_SALE_ID,
+
+											// your custom minting arguments...
+										}}
+									/>
+								</div>
+							}
+						/>
+						<If
+							condition={mintType === MINTS.DISCOUNTED && discountCode}
+							then={
+								<CrossmintPayButton
+									projectId="1d2587be-f150-4661-8377-5445a43d5719"
+									collectionId="47f94c27-06b4-4089-b685-087f095159c3"
+									environment="staging"
+									mintTo={receiverAddress}
+									mintConfig={{
+										type: 'erc-721',
+										quantity: noOfTokens,
+										totalPrice: ethPrice,
+										_receiver: receiverAddress,
+										_numberOfTokens: noOfTokens,
+										_saleId: MINT_SALE_ID,
+										_discountIndex: discountIndex,
+										_discountedPrice: discountedPrice,
+										_signature: discountedSignature,
+										// your custom minting arguments...
+									}}
+								/>
+							}
+						/>
+					</div>
+				</div>
+			}
+			else={
+				<div className="flex justify-center items-center absolute top-[25%]">
+					<DiscountCodeComp
+						setDiscountCode={setDiscountCode}
+						setShowDiscountComp={setShowDiscountComp}
+						discountCode={discountCode}
+					/>
+				</div>
+			}
+		/>
 	);
 };
 

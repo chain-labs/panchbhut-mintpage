@@ -30,7 +30,7 @@ const index = () => {
 		<If
 			condition={contractExists}
 			then={
-				<div className="min-h-screen bg-white bg-cover bg-center bg-no-repeat flex justify-center items-center">
+				<div className="min-h-screen bg-mint-page-lg bg-cover bg-center bg-no-repeat flex justify-center items-center">
 					<CrossmintComponent contract={contract} />
 				</div>
 			}
