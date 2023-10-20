@@ -27,10 +27,18 @@ export const hashQueryData = (query) => {
   }
 
 export const getMerkleHashes = async () => {
-    const { data } = await axios.get(`https://gateway.pinata.cloud/ipfs/${IPFS_HASH}`)
-    console.log(data)
-    console.log(Object.values(data))
-    return Object.values(data)
+    try{
+        const { data } = await axios.get(`https://gateway.pinata.cloud/ipfs/${IPFS_HASH}`)
+        console.log(data)
+        console.log(Object.values(data))
+        return Object.values(data)
+    }
+    catch (err){
+        const { data } = await axios.get(`https://ipfs.io/ipfs/${IPFS_HASH}`)
+        console.log(data)
+        console.log(Object.values(data))
+        return Object.values(data)
+    }
   }
 
 //funct definition:
