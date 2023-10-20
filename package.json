@@ -11,10 +11,12 @@
 	"dependencies": {
 		"@arcana/auth": "^1.0.3",
 		"@arcana/auth-react": "^0.0.3",
+		"@crossmint/client-sdk-react-ui": "^1.1.1",
 		"@gelatonetwork/relay-sdk": "^3.5.0",
 		"@rainbow-me/rainbowkit": "^0.5.3",
 		"@reduxjs/toolkit": "^1.9.2",
 		"@svgr/webpack": "^6.5.1",
+		"@usewinter/checkout": "^0.1.46",
 		"akar-icons": "^1.9.17",
 		"axios": "^1.4.0",
 		"ethers": "^5.6.8",
