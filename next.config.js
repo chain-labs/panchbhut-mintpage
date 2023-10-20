@@ -9,6 +9,8 @@ const nextConfig = {
 			'images.unsplash.com',
 			'nftstorage.link',
 			'icedrive.net',
+			'ipfs.io',
+			'gateway.pinata.cloud',
 		],
 	},
 	sassOptions: {
