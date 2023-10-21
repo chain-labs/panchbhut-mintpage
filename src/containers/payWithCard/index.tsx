@@ -227,7 +227,7 @@ const CrossmintComponent = ({contract}) => {
 							{mintType ? `Mint is ${MINT_NAME[mintType].substr(4)}` : ''}
 						</a>
 
-						<label className="text-[#ffa800]">Reciever Address</label>
+						<label className="text-[#ffa800]">WALLER ADDRESS</label>
 						<div className="flex justify-center items-center gap-2">
 							<input
 								className="input w-80 h-[35px] bg-slate-300 rounded text-center text-xs text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
