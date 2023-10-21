@@ -168,7 +168,7 @@ const CrossmintComponent = ({contract}) => {
 						(
 							noOfTokens *
 							//@ts-ignore
-							(discountCode?.discountedPrice / 10000000000000000)
+							(discountCode?.discountedPrice / 1000000000000000000)
 						).toString()
 					);
 				}
