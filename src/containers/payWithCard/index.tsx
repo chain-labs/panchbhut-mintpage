@@ -23,6 +23,7 @@ import {userSelector} from 'src/redux/user';
 import toast, {Toaster} from 'react-hot-toast';
 import DiscountCodeComp from '../mintPage/components/DiscountCodeComp';
 import LogoComp from '../mintPage/components/LogoComp';
+import {formatUnits} from 'ethers/lib/utils';
 
 const CrossmintComponent = ({contract}) => {
 	const [noOfTokens, setNoOfTokens] = useState<number>(1);
@@ -128,13 +129,16 @@ const CrossmintComponent = ({contract}) => {
 							setDiscountedPrice(discountCode?.discountedPrice);
 							//@ts-ignore
 							setDiscountedSignature(discountCode?.discountSignature);
-							setEthPrice(
-								(
-									noOfTokens *
+							//@ts-ignore
+
+							const discountedPrice = BigNumber.from(noOfTokens)
+								.mul(
 									//@ts-ignore
-									(discountCode?.discountedPrice / 1000000000000000000)
-								).toString()
-							);
+									discountCode.discountedPrice
+								)
+								.toString();
+
+							setEthPrice(formatUnits(discountedPrice, 18));
 						} else {
 							console.log('Address is not allowlisted');
 							toast(
@@ -149,12 +153,13 @@ const CrossmintComponent = ({contract}) => {
 				});
 			} else if (mintType === MINTS.PUBLIC) {
 				if (noOfTokens && receiverAddress) {
-					setEthPrice(
-						(noOfTokens * (parseInt(price) / 1000000000000000000)).toString()
-					);
-					console.log(
-						(noOfTokens * (parseInt(price) / 1000000000000000000)).toString()
-					);
+					const publicPrice = BigNumber.from(noOfTokens)
+						.mul(
+							//@ts-ignore
+							price
+						)
+						.toString();
+					setEthPrice(formatUnits(publicPrice, 18));
 				}
 			} else if (mintType === MINTS.DISCOUNTED) {
 				if (discountCode) {
@@ -164,13 +169,14 @@ const CrossmintComponent = ({contract}) => {
 					setDiscountedPrice(discountCode?.discountedPrice);
 					//@ts-ignore
 					setDiscountedSignature(discountCode?.discountSignature);
-					setEthPrice(
-						(
-							noOfTokens *
+					const discountedPrice = BigNumber.from(noOfTokens)
+						.mul(
 							//@ts-ignore
-							(discountCode?.discountedPrice / 1000000000000000000)
-						).toString()
-					);
+							discountCode.discountedPrice
+						)
+						.toString();
+
+					setEthPrice(formatUnits(discountedPrice, 18));
 				}
 			} else if (mintType === MINTS.ALLOWLISTED) {
 				if (noOfTokens && receiverAddress) {
@@ -186,12 +192,13 @@ const CrossmintComponent = ({contract}) => {
 								const leaf = leafs[hashes.indexOf(receiverAddress)];
 								const proofs = tree.getHexProof(leaf);
 								setProofs(proofs);
-								setEthPrice(
-									(
-										noOfTokens *
-										(parseInt(price) / 1000000000000000000)
-									).toString()
-								);
+								const allowlistedPrice = BigNumber.from(noOfTokens)
+									.mul(
+										//@ts-ignore
+										price
+									)
+									.toString();
+								setEthPrice(formatUnits(allowlistedPrice, 18));
 							} else {
 								console.log('Address is not allowlisted');
 								toast(ALLOWLIST_ERROR);
