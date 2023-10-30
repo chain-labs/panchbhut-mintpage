@@ -36,6 +36,8 @@ const getUnit = (chainId: number): string => {
 		case 4:
 		case 5:
 			return 'ETH';
+		case 137:
+			return 'Matic'
 	}
 };
 
@@ -50,6 +52,7 @@ const checkValidNetwork = (chainId: number): boolean => {
 	} else {
 		switch (chainId) {
 			case 1:
+			case 137:
 				return true;
 			default:
 				return false;
