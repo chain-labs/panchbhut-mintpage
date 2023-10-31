@@ -13,7 +13,7 @@ const toBoolean = (condition: string) => {
 
 export const TEST_ENV = toBoolean(process.env.NEXT_PUBLIC_TEST_NETWORK)
 export const getNetwork = () => {
-  return TEST_ENV ? 'goerli' : 'ethereum'
+  return TEST_ENV ? 'goerli' : 'matic'
 }
 
 export const NETWORK: string = getNetwork()
@@ -30,6 +30,8 @@ export const getChain = () => {
       return '5'
     case 'ethereum':
       return '1'
+    case 'matic':
+      return '137'
   }
 }
 
@@ -41,6 +43,8 @@ export const getEtherscanUrl = () => {
       return `https://goerli.etherscan.io/address/${CONTRACT_ADDRESS}`
     case '1':
       return `https://etherscan.io/address/${CONTRACT_ADDRESS}`
+    case '137':
+      return `https://polygonscan.com/address/${CONTRACT_ADDRESS}`
   }
 }
 

@@ -53,7 +53,7 @@ const ConnectWallet = () => {
 				}, []);
 
 				useEffect(() => {
-					console.log(typeof Signer);
+					console.log(Signer);
 					// dispatch(setSigner(Signer));
 				}, [Signer]);
 
