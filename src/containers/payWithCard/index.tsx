@@ -304,9 +304,9 @@ const CrossmintComponent = ({contract}) => {
 							then={
 								<div>
 									<CrossmintPayButton
-										projectId="1d2587be-f150-4661-8377-5445a43d5719"
-										collectionId="47f94c27-06b4-4089-b685-087f095159c6"
-										environment="staging"
+										projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
+										collectionId="fcef1e8f-0acc-4c95-8a07-8a52a4b1b6cf"
+										environment="production"
 										mintTo={receiverAddress}
 										mintConfig={{
 											type: 'erc-721',
@@ -330,9 +330,9 @@ const CrossmintComponent = ({contract}) => {
 							then={
 								<div>
 									<CrossmintPayButton
-										projectId="1d2587be-f150-4661-8377-5445a43d5719"
-										collectionId="47f94c27-06b4-4089-b685-087f095159c4"
-										environment="staging"
+										projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
+										collectionId="72b383d6-09d7-4cd5-b758-8be39ead50e5"
+										environment="production"
 										mintTo={receiverAddress}
 										mintConfig={{
 											type: 'erc-721',
@@ -352,9 +352,9 @@ const CrossmintComponent = ({contract}) => {
 							then={
 								<div>
 									<CrossmintPayButton
-										projectId="1d2587be-f150-4661-8377-5445a43d5719"
-										collectionId="47f94c27-06b4-4089-b685-087f095159c5"
-										environment="staging"
+										projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
+										collectionId="3d252b34-3733-4ed7-8eb1-9a35c26258e1"
+										environment="production"
 										mintTo={receiverAddress}
 										mintConfig={{
 											type: 'erc-721',
@@ -375,9 +375,9 @@ const CrossmintComponent = ({contract}) => {
 							condition={mintType === MINTS.DISCOUNTED && discountCode}
 							then={
 								<CrossmintPayButton
-									projectId="1d2587be-f150-4661-8377-5445a43d5719"
-									collectionId="47f94c27-06b4-4089-b685-087f095159c3"
-									environment="staging"
+									projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
+									collectionId="643dec54-78d3-4ca0-a4f5-57f96e3987ac"
+									environment="production"
 									mintTo={receiverAddress}
 									mintConfig={{
 										type: 'erc-721',
