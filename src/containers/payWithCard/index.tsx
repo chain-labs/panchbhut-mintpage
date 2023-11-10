@@ -198,7 +198,7 @@ const CrossmintComponent = ({contract}) => {
 										price
 									)
 									.toString();
-								setEthPrice(formatUnits(allowlistedPrice, 18));
+								setEthPrice(formatUnits(allowlistedPrice, 18).toString());
 							} else {
 								console.log('Address is not allowlisted');
 								toast(ALLOWLIST_ERROR);
