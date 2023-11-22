@@ -29,6 +29,7 @@ import MinusImg from 'public/static/images/minus.png';
 import {networkSelector} from 'src/redux/network';
 import MerkleTree from 'merkletreejs';
 import {MINT_SALE_ID} from 'src/utils/constants';
+import {useRouter} from 'next/router';
 
 const MintPageComp = ({contract, signer}) => {
 	const [saleCategory, setSaleCategory] = useState();
@@ -50,7 +51,7 @@ const MintPageComp = ({contract, signer}) => {
 	const provider = useProvider();
 	const network = useAppSelector(networkSelector);
 	const [isDiscountCodeValid, setIsDiscountCodeValid] = useState(false);
-	const [hash, setHash] = useState([]);
+	const router = useRouter();
 
 	useEffect(() => {
 		const getSaleCategory = async () => {
