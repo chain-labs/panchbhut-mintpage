@@ -3,7 +3,15 @@ import React, {useEffect, useState} from 'react';
 import PlusImg from 'public/static/images/plus.png';
 import MinusImg from 'public/static/images/minus.png';
 import Image from 'next/image';
-import {MINT_SALE_ID} from 'src/utils/constants';
+import {
+	ALLOWLISTED_COLLECTION_ID,
+	DISCOUNTED_ALLOWLISTED_COLLECTION_ID,
+	DISCOUNTED_COLLECTION_ID,
+	ENVIRONMENT,
+	MINT_SALE_ID,
+	PROJECT_ID,
+	PUBLIC_COLLECTION_ID,
+} from 'src/utils/constants';
 import {BigNumber, ethers} from 'ethers';
 import {
 	getIsMintAllowListed,
@@ -304,9 +312,9 @@ const CrossmintComponent = ({contract}) => {
 							then={
 								<div>
 									<CrossmintPayButton
-										projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
-										collectionId="fcef1e8f-0acc-4c95-8a07-8a52a4b1b6cf"
-										environment="production"
+										projectId={PROJECT_ID}
+										collectionId={DISCOUNTED_ALLOWLISTED_COLLECTION_ID}
+										environment={ENVIRONMENT}
 										mintTo={receiverAddress}
 										mintConfig={{
 											type: 'erc-721',
@@ -330,9 +338,9 @@ const CrossmintComponent = ({contract}) => {
 							then={
 								<div>
 									<CrossmintPayButton
-										projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
-										collectionId="72b383d6-09d7-4cd5-b758-8be39ead50e5"
-										environment="production"
+										projectId={PROJECT_ID}
+										collectionId={PUBLIC_COLLECTION_ID}
+										environment={ENVIRONMENT}
 										mintTo={receiverAddress}
 										mintConfig={{
 											type: 'erc-721',
@@ -352,9 +360,9 @@ const CrossmintComponent = ({contract}) => {
 							then={
 								<div>
 									<CrossmintPayButton
-										projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
-										collectionId="3d252b34-3733-4ed7-8eb1-9a35c26258e1"
-										environment="production"
+										projectId={PROJECT_ID}
+										collectionId={ALLOWLISTED_COLLECTION_ID}
+										environment={ENVIRONMENT}
 										mintTo={receiverAddress}
 										mintConfig={{
 											type: 'erc-721',
@@ -375,9 +383,9 @@ const CrossmintComponent = ({contract}) => {
 							condition={mintType === MINTS.DISCOUNTED && discountCode}
 							then={
 								<CrossmintPayButton
-									projectId="03ea8fc6-c95d-4705-9a9b-e2f38b6d6dea"
-									collectionId="643dec54-78d3-4ca0-a4f5-57f96e3987ac"
-									environment="production"
+									projectId={PROJECT_ID}
+									collectionId={DISCOUNTED_COLLECTION_ID}
+									environment={ENVIRONMENT}
 									mintTo={receiverAddress}
 									mintConfig={{
 										type: 'erc-721',
