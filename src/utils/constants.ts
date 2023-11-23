@@ -11,19 +11,34 @@ const toBoolean = (condition: string) => {
   }
 }
 
-export const TEST_ENV = toBoolean(process.env.NEXT_PUBLIC_TEST_NETWORK)
-export const getNetwork = () => {
-  return TEST_ENV ? 'goerli' : 'matic'
-}
 
-export const NETWORK: string = getNetwork()
+
 
 export const MINT_SALE_ID=process.env.NEXT_PUBLIC_SALE_ID
 
 export const IPFS_HASH = process.env.NEXT_PUBLIC_IPFS_HASH
 
+export const PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID
+
+export const ALLOWLISTED_COLLECTION_ID = process.env.NEXT_PUBLIC_ALLOWLISTED_COLLECTION_ID
+
+export const DISCOUNTED_COLLECTION_ID = process.env.NEXT_PUBLIC_PROJECT_ID
+
+export const DISCOUNTED_ALLOWLISTED_COLLECTION_ID = process.env.NEXT_PUBLIC_ALLOWLISTED_COLLECTION_ID
+
+export const PUBLIC_COLLECTION_ID = process.env.NEXT_PUBLIC_ALLOWLISTED_COLLECTION_ID
+
+export const ENVIRONMENT = process.env.NEXT_PUBLIC_ENVIRONMENT
+
+export const network = process.env.NEXT_PUBLIC_NETWORK
 
 
+export const TEST_ENV = toBoolean(process.env.NEXT_PUBLIC_TEST_NETWORK)
+export const getNetwork = () => {
+  return TEST_ENV ? 'goerli' : network
+}
+
+export const NETWORK: string = getNetwork()
 export const getChain = () => {
   switch (NETWORK) {
     case 'goerli':
